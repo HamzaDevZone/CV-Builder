@@ -2,7 +2,7 @@
 import { QuickCvIcon } from './icons';
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { Home, Shield } from 'lucide-react';
+import { Home, LayoutTemplate, Shield } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
 
 export function Header() {
@@ -19,6 +19,12 @@ export function Header() {
                 <Button variant="ghost" size="sm">
                     <Home className="h-4 w-4 mr-2"/>
                     Home
+                </Button>
+            </Link>
+            <Link href="/#templates">
+                <Button variant="ghost" size="sm">
+                    <LayoutTemplate className="h-4 w-4 mr-2"/>
+                    Templates
                 </Button>
             </Link>
             <Link href="/admin/login">

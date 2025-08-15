@@ -191,7 +191,7 @@ export function CvPreviewPanel() {
 
   return (
     <>
-      <Card className="overflow-hidden shadow-lg border-none">
+      <Card className="overflow-hidden shadow-lg border-none" id="templates">
         <CardHeader className="bg-muted/30 p-4 border-b">
           <CardTitle className="text-xl flex items-center gap-2">
             <FileText className="h-5 w-5" />
