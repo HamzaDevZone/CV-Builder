@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useCvContext, accentColors, backgroundColors, fonts } from '@/context/cv-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type } from 'lucide-react';
+import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type, Share2 } from 'lucide-react';
 import { CvPreview } from './cv-preview';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -19,6 +19,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
 import { serializeCvData } from '@/lib/utils';
 import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
@@ -37,6 +38,9 @@ export function CvPreviewPanel() {
   const [aiFeedback, setAiFeedback] = useState('');
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [shareEmail, setShareEmail] = useState('');
+  const [shareMessage, setShareMessage] = useState('');
   const [templateToPurchase, setTemplateToPurchase] = useState<Template | null>(null);
   const [trxId, setTrxId] = useState('');
   const [receipt, setReceipt] = useState<File | null>(null);
@@ -121,6 +125,14 @@ export function CvPreviewPanel() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  const handleShare = () => {
+    const subject = `CV from ${cvData.personalDetails.name || 'a candidate'}`;
+    const body = `${shareMessage}\n\nTo view the CV, please download the attached PDF.\n\n(Note: This is a sample app. In a real app, you would attach the PDF or provide a secure link.)`;
+    const mailtoLink = `mailto:${shareEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoLink;
+    setIsShareDialogOpen(false);
   }
 
   return (
@@ -230,6 +242,10 @@ export function CvPreviewPanel() {
               <Sparkles className="mr-2 h-4 w-4" />
               {isAiLoading ? 'Analyzing...' : 'Enhance with AI'}
             </Button>
+            <Button onClick={() => setIsShareDialogOpen(true)} variant="outline" className="w-full">
+              <Share2 className="mr-2 h-4 w-4" />
+              Share via Email
+            </Button>
             <Button onClick={handleDownload} variant="outline" className="w-full">
               <Download className="mr-2 h-4 w-4" />
               Download as PDF
@@ -295,6 +311,34 @@ export function CvPreviewPanel() {
             <Button onClick={handlePaymentSubmit} disabled={isSubmitting}>
               {isSubmitting ? 'Submitting...' : 'Submit for Verification'}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+       <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Share via Email</DialogTitle>
+            <DialogDescription>
+              Enter the recipient's email and a message. This will open your default email client.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className='space-y-2'>
+              <Label htmlFor="shareEmail">Recipient's Email</Label>
+              <Input id="shareEmail" type="email" placeholder="recipient@example.com" value={shareEmail} onChange={e => setShareEmail(e.target.value)} />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor="shareMessage">Optional Message</Label>
+              <Textarea id="shareMessage" placeholder="I'd like to share my CV with you..." value={shareMessage} onChange={e => setShareMessage(e.target.value)} />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Note: For this to work, you must first download the CV as a PDF and attach it to the email yourself.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsShareDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleShare}>Compose Email</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
