@@ -51,4 +51,5 @@ export interface Payment {
     templateId: Template;
     status: 'pending' | 'approved';
     timestamp: Date;
+    receiptDataUrl?: string;
 }

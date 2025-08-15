@@ -9,8 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/header';
-import { CheckCircle, Clock } from 'lucide-react';
+import { CheckCircle, Clock, Eye } from 'lucide-react';
 import type { Payment } from '@/lib/types';
+import Link from 'next/link';
 
 
 export default function AdminDashboard() {
@@ -89,13 +90,14 @@ export default function AdminDashboard() {
                                 <TableHead>Transaction ID</TableHead>
                                 <TableHead>Date</TableHead>
                                 <TableHead>Status</TableHead>
+                                <TableHead>Receipt</TableHead>
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                             </TableHeader>
                             <TableBody>
                             {payments.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center h-24">
+                                    <TableCell colSpan={7} className="text-center h-24">
                                         No payment submissions yet.
                                     </TableCell>
                                 </TableRow>
@@ -114,6 +116,18 @@ export default function AdminDashboard() {
                                         }
                                         {payment.status}
                                     </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      {payment.receiptDataUrl ? (
+                                        <Button asChild variant="outline" size="sm">
+                                          <Link href={payment.receiptDataUrl} target="_blank" rel="noopener noreferrer">
+                                            <Eye className="mr-2 h-4 w-4"/>
+                                            View
+                                          </Link>
+                                        </Button>
+                                      ) : (
+                                        <span className="text-muted-foreground">N/A</span>
+                                      )}
                                     </TableCell>
                                     <TableCell className="text-right">
                                     {payment.status === 'pending' && (

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useCvContext, accentColors, backgroundColors, fonts } from '@/context/cv-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type, Share2, CreditCard, ExternalLink } from 'lucide-react';
+import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type, Share2, CreditCard, ExternalLink, Upload } from 'lucide-react';
 import { CvPreview } from './cv-preview';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -51,7 +51,7 @@ export function CvPreviewPanel() {
   const { toast } = useToast();
   
   const isCurrentTemplatePremium = templates.find(t => t.id === template)?.type === 'premium';
-  const isCurrentTemplateUnlocked = isCurrentTemplatePremium && isPremiumUnlocked;
+  const isCurrentTemplateUnlocked = !isCurrentTemplatePremium || isPremiumUnlocked;
 
   const handleDownload = () => {
     if (isCurrentTemplatePremium && !isCurrentTemplateUnlocked) {
@@ -94,8 +94,11 @@ export function CvPreviewPanel() {
     setTemplate(value);
   }
   
-  const handlePurchaseClick = (templateId: Template) => {
+  const handlePurchaseClick = (e: React.MouseEvent, templateId: Template) => {
+    e.preventDefault();
+    e.stopPropagation();
     setTemplateToPurchase(templateId);
+    setTemplate(templateId);
     setIsPaymentDialogOpen(true);
   }
 
@@ -108,33 +111,52 @@ export function CvPreviewPanel() {
       });
       return;
     }
-    setIsSubmitting(true);
-    try {
-      await submitPayment({ 
-        userId: 'user-123', 
-        transactionId: trxId, 
-        userEmail: cvData.personalDetails.email || "not-provided",
-        templateId: templateToPurchase
-      });
-      
-      setIsPaymentDialogOpen(false);
-      setTemplateToPurchase(null);
-      setTrxId('');
-      setReceipt(null);
-
-      toast({
-        title: 'Payment Submitted!',
-        description: 'Your payment is under review. An admin will approve it shortly.',
-        className: 'bg-green-500 text-white',
-      });
-    } catch (error) {
-      toast({
-        title: 'Submission Failed',
-        description: 'Could not submit payment details. Please try again.',
+    if (!receipt) {
+       toast({
+        title: 'Missing Receipt',
+        description: 'Please upload a payment receipt screenshot.',
         variant: 'destructive',
       });
-    } finally {
-      setIsSubmitting(false);
+      return;
+    }
+    setIsSubmitting(true);
+
+    const reader = new FileReader();
+    reader.readAsDataURL(receipt);
+    reader.onloadend = async () => {
+        const receiptDataUrl = reader.result as string;
+        try {
+          await submitPayment({ 
+            userId: 'user-123', 
+            transactionId: trxId, 
+            userEmail: cvData.personalDetails.email || "not-provided",
+            templateId: templateToPurchase,
+            receiptDataUrl: receiptDataUrl,
+          });
+          
+          setIsPaymentDialogOpen(false);
+          setTemplateToPurchase(null);
+          setTrxId('');
+          setReceipt(null);
+
+          toast({
+            title: 'Payment Submitted!',
+            description: 'Your payment is under review. An admin will approve it shortly.',
+            className: 'bg-green-500 text-white',
+          });
+        } catch (error) {
+          toast({
+            title: 'Submission Failed',
+            description: 'Could not submit payment details. Please try again.',
+            variant: 'destructive',
+          });
+        } finally {
+          setIsSubmitting(false);
+        }
+    };
+    reader.onerror = () => {
+        toast({ title: "Error", description: "Failed to read file.", variant: "destructive"});
+        setIsSubmitting(false);
     }
   }
 
@@ -145,6 +167,13 @@ export function CvPreviewPanel() {
     window.location.href = mailtoLink;
     setIsShareDialogOpen(false);
   }
+
+  const handleReceiptUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setReceipt(file);
+    }
+  };
   
   const paymentMethods = [
     { id: 'bank', name: 'Bank / EasyPaisa', icon: <CreditCard className="h-6 w-6"/> },
@@ -176,7 +205,7 @@ export function CvPreviewPanel() {
                   <RadioGroupItem value={temp.id} id={temp.id} className="sr-only" />
                   <Label
                     htmlFor={temp.id}
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer [&:has([data-state=checked])]:border-primary relative"
+                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer [&:has([data-state=checked])]:border-primary relative h-full"
                   >
                     {temp.name}
                     {temp.type === 'free' ? (
@@ -186,9 +215,9 @@ export function CvPreviewPanel() {
                             <CheckCircle className="h-3 w-3" /> Unlocked
                         </span>
                     ) : (
-                        <div className="w-full" onClick={(e) => { e.preventDefault(); handlePurchaseClick(temp.id); }}>
-                            <span className="text-xs text-primary font-semibold mt-2 block text-center">1500 PKR</span>
-                            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
+                        <div className="w-full text-center mt-2" onClick={(e) => handlePurchaseClick(e, temp.id) }>
+                            <span className="text-sm text-primary font-semibold block">1500 PKR</span>
+                            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
                                 <Lock className="h-3 w-3"/>
                                 <span>Unlock</span>
                             </div>
@@ -355,7 +384,7 @@ export function CvPreviewPanel() {
             {selectedPaymentMethod === 'bank' && (
                 <div className="space-y-4 text-center">
                     <p className="text-sm text-muted-foreground">
-                        Please transfer to the account below and submit your Transaction ID for verification.
+                        Please transfer to the account below and submit your Transaction ID and receipt for verification.
                     </p>
                     <div className="p-3 bg-background rounded-lg border">
                         <p className="text-xs text-muted-foreground">EasyPaisa Account</p>
@@ -364,6 +393,16 @@ export function CvPreviewPanel() {
                     <div className='space-y-2 text-left'>
                         <Label htmlFor="trxId">Transaction ID</Label>
                         <Input id="trxId" placeholder="e.g., 1234567890" value={trxId} onChange={e => setTrxId(e.target.value)} />
+                    </div>
+                     <div className='space-y-2 text-left'>
+                        <Label htmlFor="receipt">Payment Receipt</Label>
+                         <Button asChild variant="outline" className="w-full">
+                            <label htmlFor="receipt-upload" className="cursor-pointer">
+                            <Upload className="mr-2 h-4 w-4" />
+                            {receipt ? `Selected: ${receipt.name}` : 'Upload Screenshot'}
+                            <input id="receipt-upload" type="file" className="sr-only" accept="image/*" onChange={handleReceiptUpload} />
+                            </label>
+                        </Button>
                     </div>
                 </div>
             )}
