@@ -5,7 +5,7 @@ import { Mail, Phone, Linkedin, Globe, MapPin, Lock, User as UserIcon, Star, Bri
 import Image from 'next/image';
 import type { CSSProperties } from 'react';
 import { cn } from '@/lib/utils';
-import { backgroundColors, fonts } from '@/context/cv-context';
+import { backgroundColors } from '@/context/cv-context';
 
 
 interface CvPreviewProps {
@@ -46,7 +46,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, fontFa
   const renderContent = () => {
     if (template === 'creative') {
        return (
-        <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col min-h-full")}>
+        <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col min-h-full relative")}>
           {renderPremiumLock()}
           
           <header className="flex items-center gap-6">
@@ -73,7 +73,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, fontFa
             {/* Left Column */}
             <div className="col-span-4 space-y-8">
                <div>
-                  <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] mb-3">Contact</h2>
+                  <h2 className="text-lg font-bold uppercase tracking-wider mb-3" style={{color: 'var(--accent-color)'}}>Contact</h2>
                   <div className="space-y-2 text-sm text-[--secondary-foreground-cv]">
                     {personalDetails.email && <p className="flex items-center gap-2 break-all"><Mail className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.email}</span></p>}
                     {personalDetails.phone && <p className="flex items-center gap-2 break-all"><Phone className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.phone}</span></p>}
@@ -83,7 +83,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, fontFa
                   </div>
                 </div>
                 <div>
-                    <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] mb-3">Skills</h2>
+                    <h2 className="text-lg font-bold uppercase tracking-wider mb-3" style={{color: 'var(--accent-color)'}}>Skills</h2>
                     <ul className="space-y-1.5">
                         {skills.map(skill => skill.name && (
                             <li key={skill.id} className="flex items-center gap-2">
@@ -98,7 +98,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, fontFa
             {/* Right Column */}
             <div className="col-span-8 border-l-2 pl-8 space-y-8" style={{borderColor: 'var(--accent-color)'}}>
                 <div>
-                    <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] mb-4 flex items-center gap-3"><Briefcase />Experience</h2>
+                    <h2 className="text-lg font-bold uppercase tracking-wider mb-4 flex items-center gap-3" style={{color: 'var(--accent-color)'}}><Briefcase />Experience</h2>
                     <div className="space-y-5">
                     {workExperience.map(exp => exp.jobTitle && (
                         <div key={exp.id}>
@@ -113,7 +113,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, fontFa
                     </div>
                 </div>
                  <div>
-                    <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] mb-4 flex items-center gap-3"><GraduationCap/>Education</h2>
+                    <h2 className="text-lg font-bold uppercase tracking-wider mb-4 flex items-center gap-3" style={{color: 'var(--accent-color)'}}><GraduationCap/>Education</h2>
                     <div className="space-y-5">
                     {education.map(edu => edu.degree && (
                         <div key={edu.id}>
@@ -134,14 +134,12 @@ export function CvPreview({ data, template, accentColor, backgroundColor, fontFa
     }
     
     if (template === 'modern') {
-      const sidebarIsDark = true;
       const sidebarStyles: CSSProperties = {
         '--sidebar-bg': 'var(--accent-color)',
         '--sidebar-fg': '#ffffff',
         '--sidebar-muted-fg': '#e5e7eb',
       };
       
-      const contentIsDark = isDarkBackground;
       const contentStyles: CSSProperties = {
           '--content-bg': 'var(--background-cv)',
           '--content-fg': 'var(--foreground-cv)',
@@ -150,7 +148,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, fontFa
       };
       
       return (
-        <div style={{...cvStyles, ...sidebarStyles, ...contentStyles}} className={cn("flex min-h-full")}>
+        <div style={{...cvStyles, ...sidebarStyles, ...contentStyles}} className={cn("flex min-h-full relative")}>
            {renderPremiumLock()}
 
           {/* Left Sidebar */}
@@ -246,7 +244,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, fontFa
           </div>
           <div className="mt-4 md:mt-0">
             <h1 className="text-3xl md:text-4xl font-bold" style={{ color: 'var(--accent-color)' }}>{personalDetails.name || 'Your Name'}</h1>
-            <p className="text-lg md:text-xl mt-1">{personalDetails.jobTitle || 'Professional Title'}</p>
+            <p className="text-lg md:text-xl mt-1 text-[--secondary-foreground-cv]">{personalDetails.jobTitle || 'Professional Title'}</p>
             <div className="flex flex-col md:flex-row gap-x-4 gap-y-1 mt-2 text-sm text-[--muted-foreground-cv] flex-wrap items-center justify-center md:justify-start">
               {personalDetails.email && <p className="flex items-center gap-1"><Mail size={14} style={{ color: 'var(--accent-color)' }}/> {personalDetails.email}</p>}
               {personalDetails.phone && <p className="flex items-center gap-1"><Phone size={14} style={{ color: 'var(--accent-color)' }}/> {personalDetails.phone}</p>}
@@ -259,7 +257,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, fontFa
 
         <section className="mt-6">
           <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1" style={{ color: 'var(--accent-color)', borderColor: 'var(--accent-color)' }}>Summary</h2>
-          <p className="mt-2 text-sm leading-relaxed">{personalDetails.summary || 'A brief professional summary...'}</p>
+          <p className="mt-2 text-sm leading-relaxed text-[--secondary-foreground-cv]">{personalDetails.summary || 'A brief professional summary...'}</p>
         </section>
 
         <section className="mt-6">
@@ -271,7 +269,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, fontFa
                 <span className="text-sm text-[--muted-foreground-cv] mt-1 sm:mt-0">{exp.startDate} - {exp.endDate}</span>
               </div>
               <p className="text-sm text-[--secondary-foreground-cv] italic">{exp.location}</p>
-              <p className="mt-2 text-sm whitespace-pre-wrap">{exp.description}</p>
+              <p className="mt-2 text-sm whitespace-pre-wrap text-[--secondary-foreground-cv]">{exp.description}</p>
             </div>
           ))}
         </section>
@@ -285,7 +283,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, fontFa
                 <span className="text-sm text-[--muted-foreground-cv] mt-1 sm:mt-0">{edu.startDate} - {edu.endDate}</span>
               </div>
               <p className="text-sm text-[--secondary-foreground-cv] italic">{edu.institution}, {edu.location}</p>
-              <p className="mt-2 text-sm whitespace-pre-wrap">{edu.description}</p>
+              <p className="mt-2 text-sm whitespace-pre-wrap text-[--secondary-foreground-cv]">{edu.description}</p>
             </div>
           ))}
         </section>

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useCvContext, accentColors, backgroundColors, fonts } from '@/context/cv-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type, Share2, CreditCard, ExternalLink, Upload } from 'lucide-react';
+import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type, Share2, CreditCard, Upload } from 'lucide-react';
 import { CvPreview } from './cv-preview';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -356,7 +356,7 @@ export function CvPreviewPanel() {
              </div>
             <DialogTitle className="text-center text-2xl">Unlock Premium Access</DialogTitle>
             <DialogDescription className="text-center">
-              Purchase the "{templateToPurchase}" template for 24 hours.
+              Purchase the "{templates.find(t => t.id === templateToPurchase)?.name}" template for 24 hours.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
