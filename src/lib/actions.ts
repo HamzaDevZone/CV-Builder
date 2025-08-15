@@ -3,8 +3,14 @@
 import { cvEnhancementTool, type CvEnhancementToolInput } from "@/ai/flows/cv-enhancement-tool";
 import type { Payment, Template, User } from './types';
 
-// Mock database
-const payments: Payment[] = [];
+// Mock database - This is a simple in-memory store.
+// In a real production app, you would use a persistent database like Firestore.
+// We make it a global to ensure it persists across server action calls in a development environment.
+if (!global.payments) {
+  global.payments = [];
+}
+const payments: Payment[] = global.payments;
+
 
 export async function enhanceCv(input: CvEnhancementToolInput): Promise<string> {
     try {
@@ -18,18 +24,19 @@ export async function enhanceCv(input: CvEnhancementToolInput): Promise<string> 
 
 export async function submitPayment(data: { username: string; transactionId: string, userEmail: string; templateId: Template, receiptDataUrl: string; }) {
     console.log("Submitting payment for user:", data.username, "for template", data.templateId, "with email", data.userEmail);
-    // Avoid duplicate pending payments
+    // Avoid duplicate pending payments based on transactionId
     const existingPayment = payments.find(p => p.transactionId === data.transactionId);
     if (!existingPayment) {
        payments.push({ ...data, status: 'pending', timestamp: new Date() });
     }
+    console.log("Current payments count:", payments.length);
     return { success: true };
 }
 
 export async function getPayments(): Promise<Payment[]> {
     // In a real app, you'd fetch this from a database
-    // Return a copy to avoid mutation
-    const sortedPayments = [...payments].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
+    // Return a deep copy to avoid mutation and ensure serializability
+    const sortedPayments = [...payments].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     return JSON.parse(JSON.stringify(sortedPayments));
 }
 
@@ -45,7 +52,7 @@ export async function getUsers(): Promise<User[]> {
             });
         } else {
             const existingUser = userMap.get(payment.username)!;
-            if (payment.timestamp < existingUser.firstSeen) {
+            if (new Date(payment.timestamp) < new Date(existingUser.firstSeen)) {
                 existingUser.firstSeen = payment.timestamp;
                 // Also update email if it was missing before
                 if (!existingUser.email || existingUser.email === 'not-provided') {
@@ -55,7 +62,7 @@ export async function getUsers(): Promise<User[]> {
         }
     }
     const users = Array.from(userMap.values());
-    users.sort((a,b) => b.firstSeen.getTime() - a.firstSeen.getTime());
+    users.sort((a,b) => new Date(b.firstSeen).getTime() - new Date(a.firstSeen).getTime());
     return JSON.parse(JSON.stringify(users));
 }
 
@@ -66,7 +73,9 @@ export async function approvePayment(transactionId: string) {
         payment.status = 'approved';
         // The timestamp is now the approval time
         payment.timestamp = new Date();
+        console.log("Payment approved:", payment);
     } else {
+        console.error("Payment not found for approval:", transactionId);
         throw new Error("Payment not found");
     }
     return { success: true };
