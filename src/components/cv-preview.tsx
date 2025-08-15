@@ -9,20 +9,22 @@ interface CvPreviewProps {
   data: CvData;
   template: 'classic' | 'modern';
   accentColor: string;
+  backgroundColor: string;
   isPremiumLocked?: boolean;
 }
 
-export function CvPreview({ data, template, accentColor, isPremiumLocked = false }: CvPreviewProps) {
+export function CvPreview({ data, template, accentColor, backgroundColor, isPremiumLocked = false }: CvPreviewProps) {
   const { personalDetails, workExperience, education, skills } = data;
 
   const accentStyle = {
     '--accent-color': accentColor,
+    '--background-color': backgroundColor,
   } as CSSProperties;
 
   const renderContent = () => {
     if (template === 'modern') {
       return (
-        <div style={accentStyle} className="p-8 font-sans bg-card text-foreground relative font-jakarta grid grid-cols-12 gap-x-10 min-h-full">
+        <div style={accentStyle} className="p-8 font-sans bg-[--background-color] text-foreground relative font-jakarta grid grid-cols-12 gap-x-10 min-h-full">
            {isPremiumLocked && (
              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-4">
                 <Lock className="h-16 w-16 text-primary/50" style={{ color: 'var(--accent-color)', opacity: 0.5 }} />
@@ -111,7 +113,7 @@ export function CvPreview({ data, template, accentColor, isPremiumLocked = false
 
     // Classic Template
     return (
-      <div style={accentStyle} className="p-4 md:p-8 bg-card text-foreground">
+      <div style={accentStyle} className="p-4 md:p-8 bg-[--background-color] text-foreground">
          <header className="text-center md:text-left md:flex items-center gap-6 border-b pb-4" style={{borderColor: accentColor}}>
           <div className="w-24 h-24 rounded-full bg-muted overflow-hidden border-2 border-border flex-shrink-0 mx-auto md:mx-0">
              {personalDetails.photo ? (

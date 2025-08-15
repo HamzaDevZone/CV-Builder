@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useCvContext, accentColors } from '@/context/cv-context';
+import { useCvContext, accentColors, backgroundColors } from '@/context/cv-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check } from 'lucide-react';
+import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush } from 'lucide-react';
 import { CvPreview } from './cv-preview';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -24,7 +24,7 @@ import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
 
 export function CvPreviewPanel() {
-  const { cvData, template, setTemplate, isPremiumUnlocked, accentColor, setAccentColor } = useCvContext();
+  const { cvData, template, setTemplate, isPremiumUnlocked, accentColor, setAccentColor, backgroundColor, setBackgroundColor } = useCvContext();
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState('');
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
@@ -167,6 +167,26 @@ export function CvPreviewPanel() {
               ))}
             </div>
           </div>
+          <div className="space-y-3">
+            <Label className="font-semibold flex items-center gap-2"><Paintbrush className="h-4 w-4"/>Background Color</Label>
+            <div className="flex flex-wrap gap-3">
+              {Object.entries(backgroundColors).map(([name, color]) => (
+                 <button
+                    key={name}
+                    type="button"
+                    className={cn(
+                      'h-8 w-8 rounded-full border-2 transition-transform hover:scale-110',
+                      color === backgroundColor ? 'border-primary' : 'border-muted-foreground'
+                    )}
+                    style={{ backgroundColor: color }}
+                    onClick={() => setBackgroundColor(color)}
+                    aria-label={`Set background to ${name}`}
+                 >
+                    {color === backgroundColor && <Check className="h-5 w-5 text-primary-foreground mix-blend-difference mx-auto" />}
+                 </button>
+              ))}
+            </div>
+          </div>
           <Separator/>
           <div className="flex flex-col sm:flex-row gap-2">
             <Button onClick={handleAiEnhance} disabled={isAiLoading} className="w-full">
@@ -186,6 +206,7 @@ export function CvPreviewPanel() {
             data={cvData}
             template={template}
             accentColor={accentColor}
+            backgroundColor={backgroundColor}
             isPremiumLocked={template === 'modern' && !isPremiumUnlocked}
           />
         </div>
@@ -199,7 +220,7 @@ export function CvPreviewPanel() {
               Here are some suggestions to improve your CV.
             </DialogDescription>
           </DialogHeader>
-          <div className="prose prose-sm max-h-[60vh] overflow-y-auto p-1 rounded-lg">
+          <div className="prose prose-sm max-h-[60vh] overflow-y-auto p-1 rounded-lg dark:prose-invert">
             <pre className="whitespace-pre-wrap font-body text-sm text-foreground bg-secondary p-4 rounded-md">{aiFeedback}</pre>
           </div>
           <DialogFooter>
