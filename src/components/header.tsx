@@ -2,7 +2,7 @@
 import { CVPakIcon } from './icons';
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { Shield } from 'lucide-react';
+import { Home, Shield } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
 
 export function Header() {
@@ -15,6 +15,12 @@ export function Header() {
         </Link>
         <div className="flex items-center gap-2">
             <ThemeToggle />
+            <Link href="/">
+                <Button variant="ghost" size="sm">
+                    <Home className="h-4 w-4 mr-2"/>
+                    Home
+                </Button>
+            </Link>
             <Link href="/admin/login">
                 <Button variant="outline" size="sm">
                     <Shield className="h-4 w-4 mr-2"/>
