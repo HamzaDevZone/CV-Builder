@@ -64,6 +64,8 @@
   }
   .cv-print-area, .cv-print-area * {
     visibility: visible;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .cv-print-area {
     position: absolute;
