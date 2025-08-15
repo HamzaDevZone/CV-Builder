@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useCvContext, accentColors, backgroundColors } from '@/context/cv-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush } from 'lucide-react';
+import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon } from 'lucide-react';
 import { CvPreview } from './cv-preview';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -175,13 +175,14 @@ export function CvPreviewPanel() {
                     key={name}
                     type="button"
                     className={cn(
-                      'h-8 w-8 rounded-full border-2 transition-transform hover:scale-110',
+                      'h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 flex items-center justify-center',
                       color === backgroundColor ? 'border-primary' : 'border-muted-foreground'
                     )}
-                    style={{ backgroundColor: color }}
+                    style={{ background: color }}
                     onClick={() => setBackgroundColor(color)}
                     aria-label={`Set background to ${name}`}
                  >
+                    {name === 'gradient' && <ImageIcon className="h-4 w-4 text-white/70" />}
                     {color === backgroundColor && <Check className="h-5 w-5 text-primary-foreground mix-blend-difference mx-auto" />}
                  </button>
               ))}

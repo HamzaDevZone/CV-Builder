@@ -19,8 +19,9 @@ export const accentColors = [
 
 export const backgroundColors = {
   light: '#ffffff',
-  dark: '#111827',
   paper: '#f3f4f6',
+  dark: '#1f2937',
+  gradient: 'linear-gradient(to right, #6d28d9, #be185d)',
 };
 
 interface CvContextType {
