@@ -6,19 +6,37 @@ import { CvPreviewPanel } from '@/components/cv-preview-panel';
 import { Header } from '@/components/header';
 import { CvProvider } from '@/context/cv-context';
 import { SplashScreen } from '@/components/splash-screen';
+import { WelcomeScreen } from '@/components/welcome-screen';
 
 export default function BuilderPage() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [appState, setAppState] = useState('loading'); // loading, welcome, ready
+  const [username, setUsername] = useState('');
 
   useEffect(() => {
+    const storedUsername = localStorage.getItem('cv-username');
     const timer = setTimeout(() => {
-      setIsLoading(false);
+      if (storedUsername) {
+        setUsername(storedUsername);
+        setAppState('ready');
+      } else {
+        setAppState('welcome');
+      }
     }, 2000); // Show splash screen for 2 seconds
     return () => clearTimeout(timer);
   }, []);
+  
+  const handleGetStarted = (name: string) => {
+    localStorage.setItem('cv-username', name);
+    setUsername(name);
+    setAppState('ready');
+  }
 
-  if (isLoading) {
+  if (appState === 'loading') {
     return <SplashScreen />;
+  }
+  
+  if (appState === 'welcome') {
+    return <WelcomeScreen onGetStarted={handleGetStarted} />;
   }
 
   return (

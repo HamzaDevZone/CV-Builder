@@ -45,11 +45,17 @@ export interface CvData {
 export type Template = 'classic' | 'modern' | 'creative';
 
 export interface Payment {
-    userId: string;
+    username: string;
     userEmail: string;
     transactionId: string;
     templateId: Template;
     status: 'pending' | 'approved';
     timestamp: Date;
     receiptDataUrl?: string;
+}
+
+export interface User {
+  username: string;
+  email: string;
+  firstSeen: Date;
 }

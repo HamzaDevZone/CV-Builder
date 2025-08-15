@@ -53,14 +53,16 @@ export function CvProvider({ children }: { children: ReactNode }) {
   const [fontFamily, setFontFamily] = useState<string>(fonts.inter.cssValue);
   const [isPremiumUnlocked, setIsPremiumUnlocked] = useState(false);
   
-  // Mock user ID
-  const userId = 'user-123';
-
   useEffect(() => {
+    const username = localStorage.getItem('cv-username');
+
     const checkPremium = async () => {
-      if (!template) return;
+      if (!template || !username) {
+        setIsPremiumUnlocked(false);
+        return;
+      };
       try {
-        const status = await getPremiumStatus({ userId, templateId: template });
+        const status = await getPremiumStatus({ username, templateId: template });
         setIsPremiumUnlocked(status);
       } catch (error) {
         console.error("Failed to check premium status:", error);
@@ -74,7 +76,7 @@ export function CvProvider({ children }: { children: ReactNode }) {
     const interval = setInterval(checkPremium, 5000); // Check every 5 seconds
     
     return () => clearInterval(interval);
-  }, [userId, template]);
+  }, [template]);
 
   return (
     <CvContext.Provider value={{ cvData, setCvData, template, setTemplate, accentColor, setAccentColor, backgroundColor, setBackgroundColor, fontFamily, setFontFamily, isPremiumUnlocked }}>

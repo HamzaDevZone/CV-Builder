@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCvContext, accentColors, backgroundColors, fonts } from '@/context/cv-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -119,6 +119,13 @@ export function CvPreviewPanel() {
       });
       return;
     }
+    
+    const username = localStorage.getItem('cv-username');
+    if(!username) {
+        toast({ title: 'Error', description: 'Username not found. Please refresh.', variant: 'destructive' });
+        return;
+    }
+
     setIsSubmitting(true);
 
     const reader = new FileReader();
@@ -127,7 +134,7 @@ export function CvPreviewPanel() {
         const receiptDataUrl = reader.result as string;
         try {
           await submitPayment({ 
-            userId: 'user-123', 
+            username: username,
             transactionId: trxId, 
             userEmail: cvData.personalDetails.email || "not-provided",
             templateId: templateToPurchase,
