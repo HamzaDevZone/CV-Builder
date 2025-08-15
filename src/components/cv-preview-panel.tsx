@@ -274,8 +274,23 @@ export function CvPreviewPanel() {
           </div>
         </CardContent>
       </Card>
-      <div className="mt-8 rounded-lg overflow-hidden shadow-2xl shadow-primary/10">
+      
+      {/* This wrapper is used for printing */}
+      <div className="hidden print:block cv-print-area-wrapper">
         <div className="aspect-[210/297] cv-print-area">
+          <CvPreview
+            data={cvData}
+            template={template}
+            accentColor={accentColor}
+            backgroundColor={backgroundColor}
+            fontFamily={fontFamily}
+          />
+        </div>
+      </div>
+
+      {/* This is for on-screen preview */}
+      <div className="mt-8 rounded-lg overflow-hidden shadow-2xl shadow-primary/10 print:hidden">
+        <div className="aspect-[210/297]">
           <CvPreview
             data={cvData}
             template={template}

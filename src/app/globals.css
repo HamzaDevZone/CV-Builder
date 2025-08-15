@@ -59,23 +59,36 @@
 }
 
 @media print {
-  body * {
-    visibility: hidden;
-  }
-  .cv-print-area, .cv-print-area * {
-    visibility: visible;
+  body, html {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    background: white; /* Ensure print background is clean */
   }
-  .cv-print-area {
+
+  body > *:not(.cv-print-area-wrapper) {
+    display: none;
+  }
+  
+  .cv-print-area-wrapper {
+    display: block !important;
     position: absolute;
-    left: 0;
     top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    transform: scale(0.95);
-    transform-origin: top left;
+    overflow: hidden;
   }
+
+  .cv-print-area {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+    transform: scale(1); /* Ensure no scaling issues */
+  }
+
   @page {
     size: A4;
     margin: 0;
