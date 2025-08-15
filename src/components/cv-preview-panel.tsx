@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useCvContext } from '@/context/cv-context';
+import { useCvContext, accentColors } from '@/context/cv-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Sparkles, Lock, FileText, Palette, CheckCircle } from 'lucide-react';
+import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check } from 'lucide-react';
 import { CvPreview } from './cv-preview';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -21,9 +21,10 @@ import {
 import { Input } from './ui/input';
 import { serializeCvData } from '@/lib/utils';
 import { Separator } from './ui/separator';
+import { cn } from '@/lib/utils';
 
 export function CvPreviewPanel() {
-  const { cvData, template, setTemplate, isPremiumUnlocked } = useCvContext();
+  const { cvData, template, setTemplate, isPremiumUnlocked, accentColor, setAccentColor } = useCvContext();
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState('');
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
@@ -146,6 +147,26 @@ export function CvPreviewPanel() {
               </div>
             </RadioGroup>
           </div>
+          <div className="space-y-3">
+            <Label className="font-semibold flex items-center gap-2"><Palette className="h-4 w-4"/>Accent Color</Label>
+            <div className="flex flex-wrap gap-3">
+              {accentColors.map((color) => (
+                 <button
+                    key={color}
+                    type="button"
+                    className={cn(
+                      'h-8 w-8 rounded-full border-2 transition-transform hover:scale-110',
+                      color === accentColor ? 'border-primary' : 'border-transparent'
+                    )}
+                    style={{ backgroundColor: color }}
+                    onClick={() => setAccentColor(color)}
+                    aria-label={`Set color to ${color}`}
+                 >
+                    {color === accentColor && <Check className="h-5 w-5 text-white mx-auto" />}
+                 </button>
+              ))}
+            </div>
+          </div>
           <Separator/>
           <div className="flex flex-col sm:flex-row gap-2">
             <Button onClick={handleAiEnhance} disabled={isAiLoading} className="w-full">
@@ -164,6 +185,7 @@ export function CvPreviewPanel() {
           <CvPreview
             data={cvData}
             template={template}
+            accentColor={accentColor}
             isPremiumLocked={template === 'modern' && !isPremiumUnlocked}
           />
         </div>

@@ -3,30 +3,36 @@
 import { type CvData } from '@/lib/types';
 import { Mail, Phone, Linkedin, Globe, MapPin, Lock, User as UserIcon } from 'lucide-react';
 import Image from 'next/image';
+import type { CSSProperties } from 'react';
 
 interface CvPreviewProps {
   data: CvData;
   template: 'classic' | 'modern';
+  accentColor: string;
   isPremiumLocked?: boolean;
 }
 
-export function CvPreview({ data, template, isPremiumLocked = false }: CvPreviewProps) {
+export function CvPreview({ data, template, accentColor, isPremiumLocked = false }: CvPreviewProps) {
   const { personalDetails, workExperience, education, skills } = data;
+
+  const accentStyle = {
+    '--accent-color': accentColor,
+  } as CSSProperties;
 
   const renderContent = () => {
     if (template === 'modern') {
       return (
-        <div className="p-8 font-sans bg-card text-foreground relative font-jakarta grid grid-cols-12 gap-x-10 min-h-full">
+        <div style={accentStyle} className="p-8 font-sans bg-card text-foreground relative font-jakarta grid grid-cols-12 gap-x-10 min-h-full">
            {isPremiumLocked && (
              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-4">
-                <Lock className="h-16 w-16 text-primary/50" />
-                <p className="mt-4 text-2xl font-bold text-primary/70">Premium Template</p>
+                <Lock className="h-16 w-16 text-primary/50" style={{ color: 'var(--accent-color)', opacity: 0.5 }} />
+                <p className="mt-4 text-2xl font-bold text-primary/70" style={{ color: 'var(--accent-color)', opacity: 0.7 }}>Premium Template</p>
                 <p className="text-muted-foreground">Complete payment to unlock and remove this watermark.</p>
             </div>
           )}
 
           {/* Left Column */}
-          <div className="col-span-4 bg-primary/5 p-6 rounded-lg flex flex-col items-center text-center">
+          <div className="col-span-4 bg-[--accent-color] bg-opacity-5 p-6 rounded-lg flex flex-col items-center text-center">
             <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-secondary overflow-hidden border-4 border-white shadow-lg">
               {personalDetails.photo ? (
                 <Image src={personalDetails.photo} alt={personalDetails.name} width={160} height={160} className="w-full h-full object-cover" />
@@ -38,24 +44,24 @@ export function CvPreview({ data, template, isPremiumLocked = false }: CvPreview
             </div>
             <div className="mt-4">
                 <h1 className="text-2xl md:text-3xl font-bold text-foreground">{personalDetails.name || 'Your Name'}</h1>
-                <p className="text-md md:text-lg text-primary font-medium">{personalDetails.jobTitle || 'Professional Title'}</p>
+                <p className="text-md md:text-lg text-[--accent-color] font-medium">{personalDetails.jobTitle || 'Professional Title'}</p>
             </div>
 
              <div className="mt-8 w-full text-left">
               <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4 text-center">Contact</h2>
               <div className="space-y-3 text-sm text-secondary-foreground">
-                {personalDetails.email && <p className="flex items-start gap-3 break-all"><Mail className="text-primary flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.email}</span></p>}
-                {personalDetails.phone && <p className="flex items-start gap-3 break-all"><Phone className="text-primary flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.phone}</span></p>}
-                {personalDetails.address && <p className="flex items-start gap-3 break-all"><MapPin className="text-primary flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.address}</span></p>}
-                {personalDetails.linkedin && <p className="flex items-start gap-3 break-all"><Linkedin className="text-primary flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.linkedin}</span></p>}
-                {personalDetails.website && <p className="flex items-start gap-3 break-all"><Globe className="text-primary flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.website}</span></p>}
+                {personalDetails.email && <p className="flex items-start gap-3 break-all"><Mail className="text-[--accent-color] flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.email}</span></p>}
+                {personalDetails.phone && <p className="flex items-start gap-3 break-all"><Phone className="text-[--accent-color] flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.phone}</span></p>}
+                {personalDetails.address && <p className="flex items-start gap-3 break-all"><MapPin className="text-[--accent-color] flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.address}</span></p>}
+                {personalDetails.linkedin && <p className="flex items-start gap-3 break-all"><Linkedin className="text-[--accent-color] flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.linkedin}</span></p>}
+                {personalDetails.website && <p className="flex items-start gap-3 break-all"><Globe className="text-[--accent-color] flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.website}</span></p>}
               </div>
             </div>
 
             <div className="mt-8 w-full">
               <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4 text-center">Skills</h2>
               <ul className="flex flex-wrap gap-2 justify-center">
-                {skills.map(skill => skill.name && <li key={skill.id} className="bg-primary/10 text-primary-foreground text-xs font-medium px-3 py-1 rounded-full">{skill.name}</li>)}
+                {skills.map(skill => skill.name && <li key={skill.id} className="bg-[--accent-color] bg-opacity-10 text-[--accent-color] text-xs font-medium px-3 py-1 rounded-full">{skill.name}</li>)}
               </ul>
             </div>
           </div>
@@ -63,12 +69,12 @@ export function CvPreview({ data, template, isPremiumLocked = false }: CvPreview
           {/* Right Column */}
           <div className="col-span-8 py-6 pr-6">
             <div className="mb-8">
-              <h2 className="text-xl font-bold text-primary border-b-2 border-primary/20 pb-2 mb-3">About Me</h2>
+              <h2 className="text-xl font-bold text-[--accent-color] border-b-2 border-[--accent-color]/20 pb-2 mb-3">About Me</h2>
               <p className="text-sm leading-relaxed text-secondary-foreground">{personalDetails.summary || 'A brief professional summary...'}</p>
             </div>
 
             <div className="mb-8">
-              <h2 className="text-xl font-bold text-primary border-b-2 border-primary/20 pb-2 mb-3">Experience</h2>
+              <h2 className="text-xl font-bold text-[--accent-color] border-b-2 border-[--accent-color]/20 pb-2 mb-3">Experience</h2>
               <div className="space-y-6">
               {workExperience.map(exp => exp.jobTitle && (
                 <div key={exp.id}>
@@ -76,7 +82,7 @@ export function CvPreview({ data, template, isPremiumLocked = false }: CvPreview
                     <h3 className="text-lg font-semibold text-foreground">{exp.jobTitle}</h3>
                     <p className="text-xs font-medium text-muted-foreground mt-1 sm:mt-0">{exp.startDate} - {exp.endDate}</p>
                   </div>
-                  <p className="text-md font-medium text-primary">{exp.company} | {exp.location}</p>
+                  <p className="text-md font-medium text-[--accent-color]">{exp.company} | {exp.location}</p>
                   <p className="mt-2 text-sm whitespace-pre-wrap text-secondary-foreground">{exp.description}</p>
                 </div>
               ))}
@@ -84,7 +90,7 @@ export function CvPreview({ data, template, isPremiumLocked = false }: CvPreview
             </div>
 
             <div>
-              <h2 className="text-xl font-bold text-primary border-b-2 border-primary/20 pb-2 mb-3">Education</h2>
+              <h2 className="text-xl font-bold text-[--accent-color] border-b-2 border-[--accent-color]/20 pb-2 mb-3">Education</h2>
               <div className="space-y-6">
               {education.map(edu => edu.degree && (
                 <div key={edu.id}>
@@ -92,7 +98,7 @@ export function CvPreview({ data, template, isPremiumLocked = false }: CvPreview
                     <h3 className="text-lg font-semibold text-foreground">{edu.degree}</h3>
                     <p className="text-xs font-medium text-muted-foreground mt-1 sm:mt-0">{edu.startDate} - {edu.endDate}</p>
                   </div>
-                  <p className="text-md font-medium text-primary">{edu.institution} | {edu.location}</p>
+                  <p className="text-md font-medium text-[--accent-color]">{edu.institution} | {edu.location}</p>
                     <p className="mt-2 text-sm whitespace-pre-wrap text-secondary-foreground">{edu.description}</p>
                 </div>
               ))}
@@ -105,8 +111,8 @@ export function CvPreview({ data, template, isPremiumLocked = false }: CvPreview
 
     // Classic Template
     return (
-      <div className="p-4 md:p-8 bg-card text-foreground">
-         <header className="text-center md:text-left md:flex items-center gap-6 border-b pb-4">
+      <div style={accentStyle} className="p-4 md:p-8 bg-card text-foreground">
+         <header className="text-center md:text-left md:flex items-center gap-6 border-b pb-4" style={{borderColor: accentColor}}>
           <div className="w-24 h-24 rounded-full bg-muted overflow-hidden border-2 border-border flex-shrink-0 mx-auto md:mx-0">
              {personalDetails.photo ? (
                 <Image src={personalDetails.photo} alt={personalDetails.name} width={96} height={96} className="w-full h-full object-cover" />
@@ -117,25 +123,25 @@ export function CvPreview({ data, template, isPremiumLocked = false }: CvPreview
               )}
           </div>
           <div className="mt-4 md:mt-0">
-            <h1 className="text-3xl md:text-4xl font-bold">{personalDetails.name || 'Your Name'}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold" style={{ color: accentColor }}>{personalDetails.name || 'Your Name'}</h1>
             <p className="text-lg md:text-xl mt-1">{personalDetails.jobTitle || 'Professional Title'}</p>
             <div className="flex flex-col md:flex-row gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground flex-wrap items-center justify-center md:justify-start">
-              {personalDetails.email && <p className="flex items-center gap-1"><Mail size={14}/> {personalDetails.email}</p>}
-              {personalDetails.phone && <p className="flex items-center gap-1"><Phone size={14}/> {personalDetails.phone}</p>}
-              {personalDetails.address && <p className="flex items-center gap-1"><MapPin size={14}/> {personalDetails.address}</p>}
-              {personalDetails.linkedin && <p className="flex items-center gap-1"><Linkedin size={14}/> {personalDetails.linkedin}</p>}
-              {personalDetails.website && <p className="flex items-center gap-1"><Globe size={14}/> {personalDetails.website}</p>}
+              {personalDetails.email && <p className="flex items-center gap-1"><Mail size={14} style={{ color: accentColor }}/> {personalDetails.email}</p>}
+              {personalDetails.phone && <p className="flex items-center gap-1"><Phone size={14} style={{ color: accentColor }}/> {personalDetails.phone}</p>}
+              {personalDetails.address && <p className="flex items-center gap-1"><MapPin size={14} style={{ color: accentColor }}/> {personalDetails.address}</p>}
+              {personalDetails.linkedin && <p className="flex items-center gap-1"><Linkedin size={14} style={{ color: accentColor }}/> {personalDetails.linkedin}</p>}
+              {personalDetails.website && <p className="flex items-center gap-1"><Globe size={14} style={{ color: accentColor }}/> {personalDetails.website}</p>}
             </div>
           </div>
         </header>
 
         <section className="mt-6">
-          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1">Summary</h2>
+          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1" style={{ color: accentColor, borderColor: accentColor }}>Summary</h2>
           <p className="mt-2 text-sm leading-relaxed">{personalDetails.summary || 'A brief professional summary...'}</p>
         </section>
 
         <section className="mt-6">
-          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1">Work Experience</h2>
+          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1" style={{ color: accentColor, borderColor: accentColor }}>Work Experience</h2>
           {workExperience.map(exp => exp.jobTitle && (
             <div key={exp.id} className="mt-4">
               <div className="flex flex-col sm:flex-row justify-between sm:items-baseline">
@@ -149,7 +155,7 @@ export function CvPreview({ data, template, isPremiumLocked = false }: CvPreview
         </section>
 
         <section className="mt-6">
-          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1">Education</h2>
+          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1" style={{ color: accentColor, borderColor: accentColor }}>Education</h2>
           {education.map(edu => edu.degree &&(
             <div key={edu.id} className="mt-4">
               <div className="flex flex-col sm:flex-row justify-between sm:items-baseline">
@@ -163,9 +169,9 @@ export function CvPreview({ data, template, isPremiumLocked = false }: CvPreview
         </section>
 
         <section className="mt-6">
-          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1">Skills</h2>
+          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1" style={{ color: accentColor, borderColor: accentColor }}>Skills</h2>
           <ul className="flex flex-wrap gap-2 mt-2">
-            {skills.map(skill => skill.name && <li key={skill.id} className="bg-secondary text-secondary-foreground text-sm px-3 py-1 rounded-md">{skill.name}</li>)}
+            {skills.map(skill => skill.name && <li key={skill.id} className="text-sm px-3 py-1 rounded-md" style={{ backgroundColor: `${accentColor}1A`, color: accentColor }}>{skill.name}</li>)}
           </ul>
         </section>
       </div>

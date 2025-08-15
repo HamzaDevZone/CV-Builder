@@ -7,11 +7,23 @@ import { getPremiumStatus } from '@/lib/actions';
 
 type Template = 'classic' | 'modern';
 
+export const accentColors = [
+  '#2563eb', // Default Blue
+  '#16a34a', // Green
+  '#ca8a04', // Amber
+  '#dc2626', // Red
+  '#8b5cf6', // Violet
+  '#db2777', // Pink
+  '#475569', // Slate
+];
+
 interface CvContextType {
   cvData: CvData;
   setCvData: (data: CvData) => void;
   template: Template;
   setTemplate: (template: Template) => void;
+  accentColor: string;
+  setAccentColor: (color: string) => void;
   isPremiumUnlocked: boolean;
   unlockPremium: () => void;
 }
@@ -21,6 +33,7 @@ const CvContext = createContext<CvContextType | undefined>(undefined);
 export function CvProvider({ children }: { children: ReactNode }) {
   const [cvData, setCvData] = useState<CvData>(defaultCvData);
   const [template, setTemplate] = useState<Template>('classic');
+  const [accentColor, setAccentColor] = useState<string>(accentColors[0]);
   const [isPremiumUnlocked, setIsPremiumUnlocked] = useState(false);
   
   // Mock user ID
@@ -47,7 +60,7 @@ export function CvProvider({ children }: { children: ReactNode }) {
   const unlockPremium = () => setIsPremiumUnlocked(true);
 
   return (
-    <CvContext.Provider value={{ cvData, setCvData, template, setTemplate, isPremiumUnlocked, unlockPremium }}>
+    <CvContext.Provider value={{ cvData, setCvData, template, setTemplate, accentColor, setAccentColor, isPremiumUnlocked, unlockPremium }}>
       {children}
     </CvContext.Provider>
   );
