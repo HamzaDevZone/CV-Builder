@@ -95,6 +95,6 @@ export async function getPremiumStatus(data: { username: string, templateId: Tem
 
 export async function adminLogin({ email, password }: {email: string, password: string}) {
     // In a real app, use a secure, hashed password comparison
-    const isAdmin = email === "rajahuzaifa015166@gmail.com" && password === "@Huzaifa112233";
+    const isAdmin = email === "rajahuzaifa015166@gmail.com" && password === "@HUZAIFA1";
     return { success: isAdmin };
 }
