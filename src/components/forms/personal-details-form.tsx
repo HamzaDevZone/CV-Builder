@@ -39,7 +39,7 @@ export function PersonalDetailsForm() {
             <FormLabel>Profile Photo</FormLabel>
             <FormControl>
                 <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                  <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center overflow-hidden border">
                     {photoUrl ? (
                         <Image src={photoUrl} alt="Profile" width={80} height={80} className="w-full h-full object-cover" />
                     ) : (
@@ -48,7 +48,7 @@ export function PersonalDetailsForm() {
                   </div>
                   <Button asChild variant="outline">
                     <label htmlFor="photo-upload" className="cursor-pointer">
-                      <Upload className="mr-2" />
+                      <Upload className="mr-2 h-4 w-4" />
                       Upload
                       <input id="photo-upload" type="file" className="sr-only" accept="image/*" onChange={handlePhotoUpload} />
                     </label>
@@ -169,7 +169,7 @@ export function PersonalDetailsForm() {
           <FormItem>
             <FormLabel>Professional Summary</FormLabel>
             <FormControl>
-              <Textarea placeholder="Write a brief summary about your professional background..." {...field} />
+              <Textarea placeholder="Write a brief summary about your professional background..." {...field} rows={5} />
             </FormControl>
             <FormMessage />
           </FormItem>

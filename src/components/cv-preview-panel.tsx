@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { useCvContext } from '@/context/cv-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Sparkles, Lock, FileText, Palette } from 'lucide-react';
+import { Download, Sparkles, Lock, FileText, Palette, CheckCircle } from 'lucide-react';
 import { CvPreview } from './cv-preview';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { enhanceCv } from '@/lib/actions';
+import { enhanceCv, submitPayment } from '@/lib/actions';
 import {
   Dialog,
   DialogContent,
@@ -23,18 +23,22 @@ import { serializeCvData } from '@/lib/utils';
 import { Separator } from './ui/separator';
 
 export function CvPreviewPanel() {
-  const { cvData, template, setTemplate, isPremiumUnlocked, unlockPremium } = useCvContext();
+  const { cvData, template, setTemplate, isPremiumUnlocked } = useCvContext();
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState('');
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [trxId, setTrxId] = useState('');
+  const [receipt, setReceipt] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const { toast } = useToast();
 
   const handleDownload = () => {
     if (template === 'modern' && !isPremiumUnlocked) {
       toast({
         title: 'Premium Template Locked',
-        description: 'Please unlock this template to download.',
+        description: 'Please complete payment to unlock this template.',
         variant: 'destructive',
       });
       setIsPaymentDialogOpen(true);
@@ -45,6 +49,7 @@ export function CvPreviewPanel() {
 
   const handleAiEnhance = async () => {
     setIsAiLoading(true);
+    setAiFeedback('');
     try {
       const cvContent = serializeCvData(cvData);
       const feedback = await enhanceCv({ cvContent });
@@ -68,18 +73,39 @@ export function CvPreviewPanel() {
     setTemplate(value);
   }
 
-  const handlePaymentConfirm = () => {
-    unlockPremium();
-    setIsPaymentDialogOpen(false);
-    toast({
-      title: 'Success!',
-      description: 'Premium template unlocked.',
-    });
+  const handlePaymentSubmit = async () => {
+    if (!trxId || !receipt) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please provide both a transaction ID and a receipt screenshot.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await submitPayment({ userId: 'user-123', transactionId: trxId, userEmail: cvData.personalDetails.email || "not-provided" });
+      
+      setIsPaymentDialogOpen(false);
+      toast({
+        title: 'Payment Submitted!',
+        description: 'Your payment is under review. An admin will approve it shortly.',
+        className: 'bg-green-500 text-white',
+      });
+    } catch (error) {
+      toast({
+        title: 'Submission Failed',
+        description: 'Could not submit payment details. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
     <>
-      <Card className="overflow-hidden shadow-lg">
+      <Card className="overflow-hidden shadow-lg border-none">
         <CardHeader className="bg-muted/30 p-4 border-b">
           <CardTitle className="text-xl flex items-center gap-2">
             <FileText className="h-5 w-5" />
@@ -88,7 +114,7 @@ export function CvPreviewPanel() {
           <CardDescription>Select a template and use tools to perfect your CV.</CardDescription>
         </CardHeader>
         <CardContent className="p-4 space-y-6">
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Label className="font-semibold flex items-center gap-2"><Palette className="h-4 w-4"/>Template</Label>
              <RadioGroup
               value={template}
@@ -99,22 +125,30 @@ export function CvPreviewPanel() {
                 <RadioGroupItem value="classic" id="classic" className="sr-only" />
                 <Label htmlFor="classic" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer [&:has([data-state=checked])]:border-primary">
                   Classic
-                  <span className="text-xs text-muted-foreground">Free</span>
+                  <span className="text-xs text-muted-foreground mt-2">Free</span>
                 </Label>
               </div>
               <div>
                 <RadioGroupItem value="modern" id="modern" className="sr-only" />
                 <Label htmlFor="modern" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer [&:has([data-state=checked])]:border-primary relative">
-                  Modern
-                  <span className="text-xs text-muted-foreground">$5.00</span>
-                  {!isPremiumUnlocked && <Lock className="h-3 w-3 absolute top-2 right-2 text-primary" />}
+                    Modern
+                    {isPremiumUnlocked ? (
+                        <span className="flex items-center gap-1 text-xs text-green-600 mt-2">
+                            <CheckCircle className="h-3 w-3" /> Unlocked
+                        </span>
+                    ) : (
+                        <>
+                            <span className="text-xs text-muted-foreground mt-2">$5.00</span>
+                            <Lock className="h-3 w-3 absolute top-2 right-2 text-primary" />
+                        </>
+                    )}
                 </Label>
               </div>
             </RadioGroup>
           </div>
           <Separator/>
           <div className="flex flex-col sm:flex-row gap-2">
-            <Button onClick={handleAiEnhance} disabled={isAiLoading} className="w-full bg-primary/90 hover:bg-primary">
+            <Button onClick={handleAiEnhance} disabled={isAiLoading} className="w-full">
               <Sparkles className="mr-2 h-4 w-4" />
               {isAiLoading ? 'Analyzing...' : 'Enhance with AI'}
             </Button>
@@ -125,19 +159,18 @@ export function CvPreviewPanel() {
           </div>
         </CardContent>
       </Card>
-      <div className="mt-8">
+      <div className="mt-8 rounded-lg overflow-hidden shadow-2xl shadow-primary/10">
         <div className="aspect-[210/297] cv-print-area">
           <CvPreview
             data={cvData}
             template={template}
-            isPremium={template === 'modern' && !isPremiumUnlocked}
+            isPremiumLocked={template === 'modern' && !isPremiumUnlocked}
           />
         </div>
       </div>
       
-      {/* AI Feedback Dialog */}
       <Dialog open={isFeedbackDialogOpen} onOpenChange={setIsFeedbackDialogOpen}>
-        <DialogContent className="sm:max-w-[625px]">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary"/>AI Feedback</DialogTitle>
             <DialogDescription>
@@ -153,13 +186,12 @@ export function CvPreviewPanel() {
         </DialogContent>
       </Dialog>
       
-      {/* Payment Dialog */}
       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Unlock Premium Template</DialogTitle>
             <DialogDescription>
-              To purchase the Modern template for $5 (or equivalent PKR), please complete the payment via EasyPaisa.
+              To purchase the Modern template for $5 (or equivalent PKR), please complete the payment and submit the details below.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -167,19 +199,21 @@ export function CvPreviewPanel() {
                 <p className="font-semibold">EasyPaisa Account</p>
                 <p className="text-2xl font-bold font-mono tracking-wider text-primary">03465496360</p>
             </div>
-            <p className="text-xs text-muted-foreground">After payment, please enter the Transaction ID and upload a screenshot of your receipt. An admin will verify your purchase.</p>
+            <p className="text-xs text-muted-foreground">After payment, please enter the Transaction ID and upload a screenshot of your receipt. An admin will verify your purchase within 24 hours.</p>
             <div className='space-y-2'>
                 <Label htmlFor="trxId">Transaction ID</Label>
-                <Input id="trxId" placeholder="e.g., 1234567890" />
+                <Input id="trxId" placeholder="e.g., 1234567890" value={trxId} onChange={e => setTrxId(e.target.value)} />
             </div>
              <div className='space-y-2'>
                 <Label htmlFor="receipt">Payment Screenshot</Label>
-                <Input id="receipt" type="file" />
+                <Input id="receipt" type="file" onChange={e => setReceipt(e.target.files?.[0] || null)} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)}>Cancel</Button>
-            <Button className="bg-accent hover:bg-accent/90" onClick={handlePaymentConfirm}>Confirm Payment</Button>
+            <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)} disabled={isSubmitting}>Cancel</Button>
+            <Button onClick={handlePaymentSubmit} disabled={isSubmitting}>
+              {isSubmitting ? 'Submitting...' : 'Submit for Verification'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

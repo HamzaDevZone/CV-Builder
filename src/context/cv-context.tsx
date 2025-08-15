@@ -1,8 +1,9 @@
 'use client';
 
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { type CvData } from '@/lib/types';
 import { defaultCvData } from '@/lib/schemas';
+import { getPremiumStatus } from '@/lib/actions';
 
 type Template = 'classic' | 'modern';
 
@@ -21,6 +22,27 @@ export function CvProvider({ children }: { children: ReactNode }) {
   const [cvData, setCvData] = useState<CvData>(defaultCvData);
   const [template, setTemplate] = useState<Template>('classic');
   const [isPremiumUnlocked, setIsPremiumUnlocked] = useState(false);
+  
+  // Mock user ID
+  const userId = 'user-123';
+
+  useEffect(() => {
+    const checkPremium = async () => {
+      try {
+        const status = await getPremiumStatus(userId);
+        setIsPremiumUnlocked(status);
+      } catch (error) {
+        console.error("Failed to check premium status:", error);
+      }
+    };
+    checkPremium();
+    
+    // Periodically check for status changes
+    const interval = setInterval(checkPremium, 5000); // Check every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, [userId]);
+
 
   const unlockPremium = () => setIsPremiumUnlocked(true);
 
