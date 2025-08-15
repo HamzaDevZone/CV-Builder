@@ -54,8 +54,8 @@ export async function getPremiumStatus(userId: string): Promise<boolean> {
     return premiumUsers.has(userId);
 }
 
-export async function adminLogin(password: string) {
+export async function adminLogin({ email, password }: {email: string, password: string}) {
     // In a real app, use a secure, hashed password comparison
-    const isAdmin = password === "admin123";
+    const isAdmin = email === "rajahuzaifa015166@gmail.com" && password === "@Huzaifa112233";
     return { success: isAdmin };
 }

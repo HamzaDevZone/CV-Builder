@@ -11,6 +11,7 @@ import { adminLogin } from '@/lib/actions';
 import { CVPakIcon } from '@/components/icons';
 
 export default function AdminLoginPage() {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const result = await adminLogin(password);
+      const result = await adminLogin({ email, password });
       if (result.success) {
         // In a real app, you'd set a secure, httpOnly cookie or session token.
         // For this demo, we'll use localStorage.
@@ -28,12 +29,12 @@ export default function AdminLoginPage() {
         toast({ title: 'Login Successful', description: 'Redirecting to dashboard...' });
         router.push('/admin/dashboard');
       } else {
-        throw new Error('Invalid password');
+        throw new Error('Invalid credentials');
       }
     } catch (error) {
       toast({
         title: 'Login Failed',
-        description: 'The password you entered is incorrect.',
+        description: 'The credentials you entered are incorrect.',
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -49,9 +50,20 @@ export default function AdminLoginPage() {
                 <CVPakIcon className="h-10 w-10 text-primary" />
              </div>
             <CardTitle>Admin Panel</CardTitle>
-            <CardDescription>Enter the admin password to access the dashboard.</CardDescription>
+            <CardDescription>Enter admin credentials to access the dashboard.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="admin@example.com"
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
