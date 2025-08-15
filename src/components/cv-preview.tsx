@@ -134,79 +134,94 @@ export function CvPreview({ data, template, accentColor, backgroundColor, fontFa
     }
     
     if (template === 'modern') {
+      const sidebarIsDark = true;
+      const sidebarStyles: CSSProperties = {
+        '--sidebar-bg': 'var(--accent-color)',
+        '--sidebar-fg': '#ffffff',
+        '--sidebar-muted-fg': '#e5e7eb',
+      };
+      
+      const contentIsDark = isDarkBackground;
+      const contentStyles: CSSProperties = {
+          '--content-bg': 'var(--background-cv)',
+          '--content-fg': 'var(--foreground-cv)',
+          '--content-secondary-fg': 'var(--secondary-foreground-cv)',
+          '--content-muted-fg': 'var(--muted-foreground-cv)',
+      };
+      
       return (
-        <div style={cvStyles} className={cn(cvClasses, "p-8 grid grid-cols-12 gap-x-10 min-h-full")}>
+        <div style={{...cvStyles, ...sidebarStyles, ...contentStyles}} className={cn("flex min-h-full")}>
            {renderPremiumLock()}
 
-          {/* Left Column */}
-          <div className="col-span-4 bg-[--accent-color]/5 p-6 rounded-lg flex flex-col items-center text-center">
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-secondary overflow-hidden border-4 border-white shadow-lg">
-              {personalDetails.photo ? (
-                <Image src={personalDetails.photo} alt={personalDetails.name} width={160} height={160} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-muted flex items-center justify-center">
-                  <UserIcon className="w-16 h-16 md:w-20 md:h-20 text-muted-foreground/50"/>
+          {/* Left Sidebar */}
+          <div className="w-[35%] flex-shrink-0 bg-[--sidebar-bg] text-[--sidebar-fg] p-8 space-y-8">
+             <div className="flex flex-col items-center text-center">
+                <div className="w-32 h-32 rounded-full bg-white/20 overflow-hidden border-4 border-white shadow-lg mb-4">
+                {personalDetails.photo ? (
+                    <Image src={personalDetails.photo} alt={personalDetails.name} width={128} height={128} className="w-full h-full object-cover" />
+                ) : (
+                    <div className="w-full h-full bg-white/20 flex items-center justify-center">
+                    <UserIcon className="w-16 h-16 text-white/50"/>
+                    </div>
+                )}
                 </div>
-              )}
+                <h1 className="text-3xl font-bold text-white">{personalDetails.name || 'Your Name'}</h1>
+                <p className="text-lg text-[--sidebar-muted-fg]">{personalDetails.jobTitle || 'Professional Title'}</p>
             </div>
-            <div className="mt-4">
-                <h1 className="text-2xl md:text-3xl font-bold" style={{color: 'var(--accent-color)'}}>{personalDetails.name || 'Your Name'}</h1>
-                <p className="text-md md:text-lg text-[--secondary-foreground-cv] font-medium">{personalDetails.jobTitle || 'Professional Title'}</p>
-            </div>
+            
+            <div className="space-y-6">
+                <div>
+                    <h2 className="text-lg font-semibold uppercase tracking-wider text-white border-b-2 border-white/20 pb-2 mb-3">Contact</h2>
+                    <div className="space-y-2.5 text-sm text-[--sidebar-muted-fg]">
+                        {personalDetails.email && <p className="flex items-start gap-3 break-all"><Mail size={16} className="mt-1 flex-shrink-0"/><span>{personalDetails.email}</span></p>}
+                        {personalDetails.phone && <p className="flex items-start gap-3 break-all"><Phone size={16} className="mt-1 flex-shrink-0"/><span>{personalDetails.phone}</span></p>}
+                        {personalDetails.address && <p className="flex items-start gap-3 break-all"><MapPin size={16} className="mt-1 flex-shrink-0"/><span>{personalDetails.address}</span></p>}
+                        {personalDetails.linkedin && <p className="flex items-start gap-3 break-all"><Linkedin size={16} className="mt-1 flex-shrink-0"/><span>{personalDetails.linkedin}</span></p>}
+                        {personalDetails.website && <p className="flex items-start gap-3 break-all"><Globe size={16} className="mt-1 flex-shrink-0"/><span>{personalDetails.website}</span></p>}
+                    </div>
+                </div>
 
-             <div className="mt-8 w-full text-left">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-[--muted-foreground-cv] mb-4 text-center">Contact</h2>
-              <div className="space-y-3 text-sm text-[--secondary-foreground-cv]">
-                {personalDetails.email && <p className="flex items-start gap-3 break-all"><Mail className="text-[--accent-color] flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.email}</span></p>}
-                {personalDetails.phone && <p className="flex items-start gap-3 break-all"><Phone className="text-[--accent-color] flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.phone}</span></p>}
-                {personalDetails.address && <p className="flex items-start gap-3 break-all"><MapPin className="text-[--accent-color] flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.address}</span></p>}
-                {personalDetails.linkedin && <p className="flex items-start gap-3 break-all"><Linkedin className="text-[--accent-color] flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.linkedin}</span></p>}
-                {personalDetails.website && <p className="flex items-start gap-3 break-all"><Globe className="text-[--accent-color] flex-shrink-0 mt-0.5" size={16}/> <span>{personalDetails.website}</span></p>}
-              </div>
-            </div>
-
-            <div className="mt-8 w-full">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-[--muted-foreground-cv] mb-4 text-center">Skills</h2>
-              <ul className="flex flex-wrap gap-2 justify-center">
-                {skills.map(skill => skill.name && <li key={skill.id} className="bg-[--accent-color]/10 text-[--accent-color] text-xs font-medium px-3 py-1 rounded-full">{skill.name}</li>)}
-              </ul>
+                <div>
+                    <h2 className="text-lg font-semibold uppercase tracking-wider text-white border-b-2 border-white/20 pb-2 mb-3">Skills</h2>
+                    <ul className="flex flex-wrap gap-2">
+                        {skills.map(skill => skill.name && <li key={skill.id} className="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full">{skill.name}</li>)}
+                    </ul>
+                </div>
             </div>
           </div>
 
           {/* Right Column */}
-          <div className="col-span-8 py-6 pr-6">
-            <div className="mb-8">
-              <h2 className="text-xl font-bold text-[--accent-color] border-b-2 border-[--accent-color]/20 pb-2 mb-3">About Me</h2>
-              <p className="text-sm leading-relaxed text-[--secondary-foreground-cv]">{personalDetails.summary || 'A brief professional summary...'}</p>
+          <div className="w-[65%] bg-[--content-bg] text-[--content-fg] p-8 space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold text-[--accent-color] uppercase tracking-wider flex items-center gap-3"><UserIcon/>Profile</h2>
+              <p className="mt-3 text-sm leading-relaxed text-[--content-secondary-fg]">{personalDetails.summary || 'A brief professional summary...'}</p>
             </div>
-
-            <div className="mb-8">
-              <h2 className="text-xl font-bold text-[--accent-color] border-b-2 border-[--accent-color]/20 pb-2 mb-3">Experience</h2>
-              <div className="space-y-6">
+            
+             <div>
+              <h2 className="text-2xl font-bold text-[--accent-color] uppercase tracking-wider flex items-center gap-3"><Briefcase/>Experience</h2>
+              <div className="space-y-6 mt-4 border-l-2 border-[--accent-color] pl-6">
               {workExperience.map(exp => exp.jobTitle && (
-                <div key={exp.id}>
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-baseline">
-                    <h3 className="text-lg font-semibold text-[--foreground-cv]">{exp.jobTitle}</h3>
-                    <p className="text-xs font-medium text-[--muted-foreground-cv] mt-1 sm:mt-0">{exp.startDate} - {exp.endDate}</p>
-                  </div>
-                  <p className="text-md font-medium text-[--accent-color]">{exp.company} | {exp.location}</p>
-                  <p className="mt-2 text-sm whitespace-pre-wrap text-[--secondary-foreground-cv]">{exp.description}</p>
+                <div key={exp.id} className="relative">
+                   <div className="w-4 h-4 rounded-full bg-[--content-bg] border-2 border-[--accent-color] absolute -left-[35px] mt-1.5"></div>
+                  <p className="text-xs font-medium text-[--content-muted-fg]">{exp.startDate} - {exp.endDate}</p>
+                  <h3 className="text-lg font-semibold text-[--content-fg] mt-1">{exp.jobTitle}</h3>
+                  <p className="text-md font-medium text-[--content-secondary-fg]">{exp.company} | {exp.location}</p>
+                  <p className="mt-2 text-sm whitespace-pre-wrap text-[--content-secondary-fg]">{exp.description}</p>
                 </div>
               ))}
               </div>
             </div>
 
             <div>
-              <h2 className="text-xl font-bold text-[--accent-color] border-b-2 border-[--accent-color]/20 pb-2 mb-3">Education</h2>
-              <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-[--accent-color] uppercase tracking-wider flex items-center gap-3"><GraduationCap/>Education</h2>
+              <div className="space-y-6 mt-4 border-l-2 border-[--accent-color] pl-6">
               {education.map(edu => edu.degree && (
-                <div key={edu.id}>
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-baseline">
-                    <h3 className="text-lg font-semibold text-[--foreground-cv]">{edu.degree}</h3>
-                    <p className="text-xs font-medium text-[--muted-foreground-cv] mt-1 sm:mt-0">{edu.startDate} - {edu.endDate}</p>
-                  </div>
-                  <p className="text-md font-medium text-[--accent-color]">{edu.institution} | {edu.location}</p>
-                    <p className="mt-2 text-sm whitespace-pre-wrap text-[--secondary-foreground-cv]">{edu.description}</p>
+                <div key={edu.id} className="relative">
+                  <div className="w-4 h-4 rounded-full bg-[--content-bg] border-2 border-[--accent-color] absolute -left-[35px] mt-1.5"></div>
+                  <p className="text-xs font-medium text-[--content-muted-fg]">{edu.startDate} - {edu.endDate}</p>
+                  <h3 className="text-lg font-semibold text-[--content-fg] mt-1">{edu.degree}</h3>
+                  <p className="text-md font-medium text-[--content-secondary-fg]">{edu.institution} | {edu.location}</p>
+                  <p className="mt-2 text-sm whitespace-pre-wrap text-[--content-secondary-fg]">{edu.description}</p>
                 </div>
               ))}
               </div>
