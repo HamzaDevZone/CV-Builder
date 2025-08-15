@@ -5,7 +5,7 @@ import { Mail, Phone, Linkedin, Globe, MapPin, Lock, User as UserIcon, Star, Bri
 import Image from 'next/image';
 import type { CSSProperties } from 'react';
 import { cn } from '@/lib/utils';
-import { backgroundColors } from '@/context/cv-context';
+import { backgroundColors, fonts } from '@/context/cv-context';
 
 
 interface CvPreviewProps {
@@ -13,10 +13,11 @@ interface CvPreviewProps {
   template: Template;
   accentColor: string;
   backgroundColor: string;
+  fontFamily: string;
   isPremiumLocked?: boolean;
 }
 
-export function CvPreview({ data, template, accentColor, backgroundColor, isPremiumLocked = false }: CvPreviewProps) {
+export function CvPreview({ data, template, accentColor, backgroundColor, fontFamily, isPremiumLocked = false }: CvPreviewProps) {
   const { personalDetails, workExperience, education, skills } = data;
 
   const isDarkBackground = [backgroundColors.dark, backgroundColors.gradient].includes(backgroundColor);
@@ -27,6 +28,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, isPrem
     '--foreground-cv': isDarkBackground ? '#ffffff' : '#111827',
     '--secondary-foreground-cv': isDarkBackground ? '#d1d5db' : '#4b5563',
     '--muted-foreground-cv': isDarkBackground ? '#9ca3af' : '#6b7281',
+    fontFamily: fontFamily,
   };
   
   const cvClasses = cn(
@@ -44,7 +46,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, isPrem
   const renderContent = () => {
     if (template === 'creative') {
        return (
-        <div style={cvStyles} className={cn(cvClasses, "p-8 font-sans font-jakarta flex flex-col min-h-full")}>
+        <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col min-h-full")}>
           {renderPremiumLock()}
           
           <header className="flex items-center gap-6">
@@ -58,8 +60,8 @@ export function CvPreview({ data, template, accentColor, backgroundColor, isPrem
               )}
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-[--foreground-cv]">{personalDetails.name || 'Your Name'}</h1>
-              <p className="text-xl text-[--accent-color] font-medium">{personalDetails.jobTitle || 'Professional Title'}</p>
+              <h1 className="text-4xl font-bold" style={{color: 'var(--accent-color)'}}>{personalDetails.name || 'Your Name'}</h1>
+              <p className="text-xl text-[--secondary-foreground-cv] font-medium">{personalDetails.jobTitle || 'Professional Title'}</p>
             </div>
           </header>
 
@@ -133,7 +135,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, isPrem
     
     if (template === 'modern') {
       return (
-        <div style={cvStyles} className={cn(cvClasses, "p-8 font-sans font-jakarta grid grid-cols-12 gap-x-10 min-h-full")}>
+        <div style={cvStyles} className={cn(cvClasses, "p-8 grid grid-cols-12 gap-x-10 min-h-full")}>
            {renderPremiumLock()}
 
           {/* Left Column */}
@@ -148,8 +150,8 @@ export function CvPreview({ data, template, accentColor, backgroundColor, isPrem
               )}
             </div>
             <div className="mt-4">
-                <h1 className="text-2xl md:text-3xl font-bold text-[--foreground-cv]">{personalDetails.name || 'Your Name'}</h1>
-                <p className="text-md md:text-lg text-[--accent-color] font-medium">{personalDetails.jobTitle || 'Professional Title'}</p>
+                <h1 className="text-2xl md:text-3xl font-bold" style={{color: 'var(--accent-color)'}}>{personalDetails.name || 'Your Name'}</h1>
+                <p className="text-md md:text-lg text-[--secondary-foreground-cv] font-medium">{personalDetails.jobTitle || 'Professional Title'}</p>
             </div>
 
              <div className="mt-8 w-full text-left">
@@ -217,7 +219,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, isPrem
     // Classic Template
     return (
       <div style={cvStyles} className={cn(cvClasses, "p-4 md:p-8")}>
-         <header className="text-center md:text-left md:flex items-center gap-6 border-b pb-4" style={{borderColor: accentColor}}>
+         <header className="text-center md:text-left md:flex items-center gap-6 border-b pb-4" style={{borderColor: 'var(--accent-color)'}}>
           <div className="w-24 h-24 rounded-full bg-muted overflow-hidden border-2 border-border flex-shrink-0 mx-auto md:mx-0">
              {personalDetails.photo ? (
                 <Image src={personalDetails.photo} alt={personalDetails.name} width={96} height={96} className="w-full h-full object-cover" />
@@ -228,25 +230,25 @@ export function CvPreview({ data, template, accentColor, backgroundColor, isPrem
               )}
           </div>
           <div className="mt-4 md:mt-0">
-            <h1 className="text-3xl md:text-4xl font-bold" style={{ color: accentColor }}>{personalDetails.name || 'Your Name'}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold" style={{ color: 'var(--accent-color)' }}>{personalDetails.name || 'Your Name'}</h1>
             <p className="text-lg md:text-xl mt-1">{personalDetails.jobTitle || 'Professional Title'}</p>
             <div className="flex flex-col md:flex-row gap-x-4 gap-y-1 mt-2 text-sm text-[--muted-foreground-cv] flex-wrap items-center justify-center md:justify-start">
-              {personalDetails.email && <p className="flex items-center gap-1"><Mail size={14} style={{ color: accentColor }}/> {personalDetails.email}</p>}
-              {personalDetails.phone && <p className="flex items-center gap-1"><Phone size={14} style={{ color: accentColor }}/> {personalDetails.phone}</p>}
-              {personalDetails.address && <p className="flex items-center gap-1"><MapPin size={14} style={{ color: accentColor }}/> {personalDetails.address}</p>}
-              {personalDetails.linkedin && <p className="flex items-center gap-1"><Linkedin size={14} style={{ color: accentColor }}/> {personalDetails.linkedin}</p>}
-              {personalDetails.website && <p className="flex items-center gap-1"><Globe size={14} style={{ color: accentColor }}/> {personalDetails.website}</p>}
+              {personalDetails.email && <p className="flex items-center gap-1"><Mail size={14} style={{ color: 'var(--accent-color)' }}/> {personalDetails.email}</p>}
+              {personalDetails.phone && <p className="flex items-center gap-1"><Phone size={14} style={{ color: 'var(--accent-color)' }}/> {personalDetails.phone}</p>}
+              {personalDetails.address && <p className="flex items-center gap-1"><MapPin size={14} style={{ color: 'var(--accent-color)' }}/> {personalDetails.address}</p>}
+              {personalDetails.linkedin && <p className="flex items-center gap-1"><Linkedin size={14} style={{ color: 'var(--accent-color)' }}/> {personalDetails.linkedin}</p>}
+              {personalDetails.website && <p className="flex items-center gap-1"><Globe size={14} style={{ color: 'var(--accent-color)' }}/> {personalDetails.website}</p>}
             </div>
           </div>
         </header>
 
         <section className="mt-6">
-          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1" style={{ color: accentColor, borderColor: accentColor }}>Summary</h2>
+          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1" style={{ color: 'var(--accent-color)', borderColor: 'var(--accent-color)' }}>Summary</h2>
           <p className="mt-2 text-sm leading-relaxed">{personalDetails.summary || 'A brief professional summary...'}</p>
         </section>
 
         <section className="mt-6">
-          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1" style={{ color: accentColor, borderColor: accentColor }}>Work Experience</h2>
+          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1" style={{ color: 'var(--accent-color)', borderColor: 'var(--accent-color)' }}>Work Experience</h2>
           {workExperience.map(exp => exp.jobTitle && (
             <div key={exp.id} className="mt-4">
               <div className="flex flex-col sm:flex-row justify-between sm:items-baseline">
@@ -260,7 +262,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, isPrem
         </section>
 
         <section className="mt-6">
-          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1" style={{ color: accentColor, borderColor: accentColor }}>Education</h2>
+          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1" style={{ color: 'var(--accent-color)', borderColor: 'var(--accent-color)' }}>Education</h2>
           {education.map(edu => edu.degree &&(
             <div key={edu.id} className="mt-4">
               <div className="flex flex-col sm:flex-row justify-between sm:items-baseline">
@@ -274,7 +276,7 @@ export function CvPreview({ data, template, accentColor, backgroundColor, isPrem
         </section>
 
         <section className="mt-6">
-          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1" style={{ color: accentColor, borderColor: accentColor }}>Skills</h2>
+          <h2 className="text-xl md:text-2xl font-bold border-b-2 pb-1" style={{ color: 'var(--accent-color)', borderColor: 'var(--accent-color)' }}>Skills</h2>
           <ul className="flex flex-wrap gap-2 mt-2">
             {skills.map(skill => skill.name && <li key={skill.id} className="text-sm px-3 py-1 rounded-md" style={{ backgroundColor: `${accentColor}1A`, color: accentColor }}>{skill.name}</li>)}
           </ul>

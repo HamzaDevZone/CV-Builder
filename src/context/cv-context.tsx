@@ -22,6 +22,13 @@ export const backgroundColors = {
   gradient: 'linear-gradient(to right, #6d28d9, #be185d)',
 };
 
+export const fonts = {
+    inter: { name: 'Inter', cssValue: "'Inter', sans-serif" },
+    jakarta: { name: 'Plus Jakarta Sans', cssValue: "'Plus Jakarta Sans', sans-serif" },
+    roboto: { name: 'Roboto', cssValue: "'Roboto', sans-serif" },
+    lora: { name: 'Lora', cssValue: "'Lora', serif" },
+};
+
 interface CvContextType {
   cvData: CvData;
   setCvData: (data: CvData) => void;
@@ -31,6 +38,8 @@ interface CvContextType {
   setAccentColor: (color: string) => void;
   backgroundColor: string;
   setBackgroundColor: (color: string) => void;
+  fontFamily: string;
+  setFontFamily: (font: string) => void;
   isPremiumUnlocked: boolean;
 }
 
@@ -41,6 +50,7 @@ export function CvProvider({ children }: { children: ReactNode }) {
   const [template, setTemplate] = useState<Template>('classic');
   const [accentColor, setAccentColor] = useState<string>(accentColors[0]);
   const [backgroundColor, setBackgroundColor] = useState<string>(backgroundColors.light);
+  const [fontFamily, setFontFamily] = useState<string>(fonts.inter.cssValue);
   const [isPremiumUnlocked, setIsPremiumUnlocked] = useState(false);
   
   // Mock user ID
@@ -67,7 +77,7 @@ export function CvProvider({ children }: { children: ReactNode }) {
   }, [userId, template]);
 
   return (
-    <CvContext.Provider value={{ cvData, setCvData, template, setTemplate, accentColor, setAccentColor, backgroundColor, setBackgroundColor, isPremiumUnlocked }}>
+    <CvContext.Provider value={{ cvData, setCvData, template, setTemplate, accentColor, setAccentColor, backgroundColor, setBackgroundColor, fontFamily, setFontFamily, isPremiumUnlocked }}>
       {children}
     </CvContext.Provider>
   );

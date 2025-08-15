@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useCvContext, accentColors, backgroundColors } from '@/context/cv-context';
+import { useCvContext, accentColors, backgroundColors, fonts } from '@/context/cv-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon } from 'lucide-react';
+import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type } from 'lucide-react';
 import { CvPreview } from './cv-preview';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -23,6 +23,7 @@ import { serializeCvData } from '@/lib/utils';
 import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
 import type { Template } from '@/lib/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const templates: { id: Template; name: string; type: 'free' | 'premium' }[] = [
     { id: 'classic', name: 'Classic', type: 'free' },
@@ -31,7 +32,7 @@ const templates: { id: Template; name: string; type: 'free' | 'premium' }[] = [
 ];
 
 export function CvPreviewPanel() {
-  const { cvData, template, setTemplate, isPremiumUnlocked, accentColor, setAccentColor, backgroundColor, setBackgroundColor } = useCvContext();
+  const { cvData, template, setTemplate, isPremiumUnlocked, accentColor, setAccentColor, backgroundColor, setBackgroundColor, fontFamily, setFontFamily } = useCvContext();
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState('');
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
@@ -165,28 +166,45 @@ export function CvPreviewPanel() {
               ))}
             </RadioGroup>
           </div>
-          <div className="space-y-3">
-            <Label className="font-semibold flex items-center gap-2"><Palette className="h-4 w-4"/>Accent Color</Label>
-            <div className="flex flex-wrap gap-3">
-              {accentColors.map((color) => (
-                 <button
-                    key={color}
-                    type="button"
-                    className={cn(
-                      'h-8 w-8 rounded-full border-2 transition-transform hover:scale-110',
-                      color === accentColor ? 'border-primary' : 'border-transparent'
-                    )}
-                    style={{ backgroundColor: color }}
-                    onClick={() => setAccentColor(color)}
-                    aria-label={`Set color to ${color}`}
-                 >
-                    {color === accentColor && <Check className="h-5 w-5 text-white mx-auto" />}
-                 </button>
-              ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <Label className="font-semibold flex items-center gap-2"><Palette className="h-4 w-4"/>Accent Color</Label>
+              <div className="flex flex-wrap gap-3">
+                {accentColors.map((color) => (
+                   <button
+                      key={color}
+                      type="button"
+                      className={cn(
+                        'h-8 w-8 rounded-full border-2 transition-transform hover:scale-110',
+                        color === accentColor ? 'border-primary' : 'border-transparent'
+                      )}
+                      style={{ backgroundColor: color }}
+                      onClick={() => setAccentColor(color)}
+                      aria-label={`Set color to ${color}`}
+                   >
+                      {color === accentColor && <Check className="h-5 w-5 text-white mx-auto" />}
+                   </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-3">
+              <Label className="font-semibold flex items-center gap-2"><Type className="h-4 w-4"/>Font Family</Label>
+               <Select value={fontFamily} onValueChange={setFontFamily}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a font" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(fonts).map(([id, font]) => (
+                      <SelectItem key={id} value={font.cssValue} style={{fontFamily: font.cssValue}}>
+                        {font.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
             </div>
           </div>
           <div className="space-y-3">
-            <Label className="font-semibold flex items-center gap-2"><Paintbrush className="h-4 w-4"/>Background Color</Label>
+            <Label className="font-semibold flex items-center gap-2"><Paintbrush className="h-4 w-4"/>Background</Label>
             <div className="flex flex-wrap gap-3">
               {Object.entries(backgroundColors).map(([name, color]) => (
                  <button
@@ -226,6 +244,7 @@ export function CvPreviewPanel() {
             template={template}
             accentColor={accentColor}
             backgroundColor={backgroundColor}
+            fontFamily={fontFamily}
             isPremiumLocked={isCurrentTemplatePremium && !isCurrentTemplateUnlocked}
           />
         </div>
