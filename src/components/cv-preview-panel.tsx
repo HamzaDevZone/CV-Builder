@@ -46,7 +46,7 @@ export function CvPreviewPanel() {
   const [trxId, setTrxId] = useState('');
   const [receipt, setReceipt] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('bank');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('easypaisa');
   
   const { toast } = useToast();
   
@@ -183,10 +183,10 @@ export function CvPreviewPanel() {
   };
   
   const paymentMethods = [
-    { id: 'bank', name: 'Bank / EasyPaisa', icon: <CreditCard className="h-6 w-6"/> },
+    { id: 'easypaisa', name: 'Easypaisa', icon: <QuickCvIcon className="h-6 w-6"/> },
+    { id: 'bank', name: 'Bank Account', icon: <CreditCard className="h-6 w-6"/> },
     { id: 'paypal', name: 'PayPal', icon: <p className="font-bold text-lg">P</p> },
     { id: 'stripe', name: 'Stripe', icon: <CreditCard className="h-6 w-6"/> },
-    { id: 'crypto', name: 'Crypto', icon: <p className="font-bold text-lg">B</p> },
   ];
 
   return (
@@ -374,7 +374,7 @@ export function CvPreviewPanel() {
                         variant={selectedPaymentMethod === method.id ? 'default' : 'outline'}
                         onClick={() => setSelectedPaymentMethod(method.id)}
                         className="flex items-center justify-start gap-2 p-2 h-auto"
-                        disabled={method.id !== 'bank'} // Only enable bank for this demo
+                        disabled={!['easypaisa', 'bank'].includes(method.id)} // Only enable bank/easypaisa for this demo
                     >
                        {method.icon}
                         <span className="text-sm">{method.name}</span>
@@ -388,15 +388,24 @@ export function CvPreviewPanel() {
                 <p className="text-xs text-muted-foreground">~ $5 USD</p>
             </div>
             
-            {selectedPaymentMethod === 'bank' && (
+            {(selectedPaymentMethod === 'easypaisa' || selectedPaymentMethod === 'bank') && (
                 <div className="space-y-4 text-center">
                     <p className="text-sm text-muted-foreground">
                         Please transfer to the account below and submit your Transaction ID and receipt for verification.
                     </p>
-                    <div className="p-3 bg-background rounded-lg border">
-                        <p className="text-xs text-muted-foreground">EasyPaisa Account</p>
-                        <p className="text-lg font-bold font-mono tracking-wider">03465496360</p>
-                    </div>
+                    {selectedPaymentMethod === 'easypaisa' && (
+                        <div className="p-3 bg-background rounded-lg border">
+                            <p className="text-xs text-muted-foreground">EasyPaisa Account</p>
+                            <p className="text-lg font-bold font-mono tracking-wider">03465496360</p>
+                        </div>
+                    )}
+                    {selectedPaymentMethod === 'bank' && (
+                         <div className="p-3 bg-background rounded-lg border text-left text-sm">
+                            <p><span className="font-semibold">Account Title:</span> Raja Huzaifa</p>
+                            <p><span className="font-semibold">Account Number:</span> 03465496360</p>
+                            <p><span className="font-semibold">Bank Name:</span> Sadapay</p>
+                        </div>
+                    )}
                     <div className='space-y-2 text-left'>
                         <Label htmlFor="trxId">Transaction ID</Label>
                         <Input id="trxId" placeholder="e.g., 1234567890" value={trxId} onChange={e => setTrxId(e.target.value)} />
@@ -413,15 +422,15 @@ export function CvPreviewPanel() {
                     </div>
                 </div>
             )}
-            {selectedPaymentMethod !== 'bank' && (
+            {!['easypaisa', 'bank'].includes(selectedPaymentMethod) && (
                 <div className="text-center text-sm text-muted-foreground p-4 bg-muted rounded-lg">
                     <p>This payment method is for demonstration only.</p>
-                    <p>Please select "Bank / EasyPaisa" to continue with the mock payment flow.</p>
+                    <p>Please select "Easypaisa" or "Bank Account" to continue.</p>
                 </div>
             )}
           </div>
           <DialogFooter className="flex-col gap-2">
-            <Button onClick={handlePaymentSubmit} disabled={isSubmitting || selectedPaymentMethod !== 'bank'}>
+            <Button onClick={handlePaymentSubmit} disabled={isSubmitting || !['easypaisa', 'bank'].includes(selectedPaymentMethod)}>
               {isSubmitting ? 'Submitting...' : 'Submit for Verification'}
             </Button>
             <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)} disabled={isSubmitting}>Cancel</Button>
