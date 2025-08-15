@@ -19,7 +19,8 @@ export async function enhanceCv(input: CvEnhancementToolInput): Promise<string> 
 export async function submitPayment(data: { username: string; transactionId: string, userEmail: string; templateId: Template, receiptDataUrl: string; }) {
     console.log("Submitting payment for user:", data.username, "for template", data.templateId, "with email", data.userEmail);
     // Avoid duplicate pending payments
-    if (!payments.some(p => p.transactionId === data.transactionId)) {
+    const existingPayment = payments.find(p => p.transactionId === data.transactionId);
+    if (!existingPayment) {
        payments.push({ ...data, status: 'pending', timestamp: new Date() });
     }
     return { success: true };
@@ -28,7 +29,7 @@ export async function submitPayment(data: { username: string; transactionId: str
 export async function getPayments(): Promise<Payment[]> {
     // In a real app, you'd fetch this from a database
     // Return a copy to avoid mutation
-    const sortedPayments = payments.sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
+    const sortedPayments = [...payments].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
     return JSON.parse(JSON.stringify(sortedPayments));
 }
 

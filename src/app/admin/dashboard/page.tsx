@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getPayments, approvePayment, getUsers } from '@/lib/actions';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -22,41 +22,38 @@ export default function AdminDashboard() {
   const router = useRouter();
   const { toast } = useToast();
 
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const paymentsData = await getPayments();
+      setPayments(paymentsData);
+      const usersData = await getUsers();
+      setUsers(usersData);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch admin data.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast]);
+
   useEffect(() => {
-    // Protect this route
     const isAdmin = localStorage.getItem('isAdmin');
     if (isAdmin !== 'true') {
       router.push('/admin/login');
       return;
     }
-
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const paymentsData = await getPayments();
-        setPayments(paymentsData);
-        const usersData = await getUsers();
-        setUsers(usersData);
-      } catch (error) {
-        toast({
-          title: 'Error',
-          description: 'Failed to fetch admin data.',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
-  }, [router, toast]);
+  }, [router, fetchData]);
 
   const handleApprove = async (transactionId: string) => {
     try {
       await approvePayment(transactionId);
-      setPayments(prev =>
-        prev.map(p => (p.transactionId === transactionId ? { ...p, status: 'approved' } : p))
-      );
+      // Refetch data to show the updated status
+      fetchData();
       toast({
         title: 'Success',
         description: `Payment ${transactionId} approved.`,
