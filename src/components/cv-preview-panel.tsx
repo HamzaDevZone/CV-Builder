@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useCvContext, accentColors, backgroundColors, fonts } from '@/context/cv-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type, Share2 } from 'lucide-react';
+import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type, Share2, CreditCard, ExternalLink } from 'lucide-react';
 import { CvPreview } from './cv-preview';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -25,6 +25,7 @@ import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
 import type { Template } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { QuickCvIcon } from './icons';
 
 const templates: { id: Template; name: string; type: 'free' | 'premium' }[] = [
     { id: 'classic', name: 'Classic', type: 'free' },
@@ -45,6 +46,7 @@ export function CvPreviewPanel() {
   const [trxId, setTrxId] = useState('');
   const [receipt, setReceipt] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('bank');
   
   const { toast } = useToast();
   
@@ -85,14 +87,23 @@ export function CvPreviewPanel() {
   };
   
   const handleTemplateChange = (value: Template) => {
+    const newTemplate = templates.find(t => t.id === value);
+    if(newTemplate?.type === 'premium' && !isPremiumUnlocked){
+        setTemplateToPurchase(newTemplate.id);
+    }
     setTemplate(value);
+  }
+  
+  const handlePurchaseClick = (templateId: Template) => {
+    setTemplateToPurchase(templateId);
+    setIsPaymentDialogOpen(true);
   }
 
   const handlePaymentSubmit = async () => {
-    if (!trxId || !receipt || !templateToPurchase) {
+    if (!trxId || !templateToPurchase) {
       toast({
         title: 'Missing Information',
-        description: 'Please provide a transaction ID, receipt, and select a template.',
+        description: 'Please provide a transaction ID and select a template.',
         variant: 'destructive',
       });
       return;
@@ -134,6 +145,13 @@ export function CvPreviewPanel() {
     window.location.href = mailtoLink;
     setIsShareDialogOpen(false);
   }
+  
+  const paymentMethods = [
+    { id: 'bank', name: 'Bank / EasyPaisa', icon: <CreditCard className="h-6 w-6"/> },
+    { id: 'paypal', name: 'PayPal', icon: <p className="font-bold text-lg">P</p> },
+    { id: 'stripe', name: 'Stripe', icon: <CreditCard className="h-6 w-6"/> },
+    { id: 'crypto', name: 'Crypto', icon: <p className="font-bold text-lg">B</p> },
+  ];
 
   return (
     <>
@@ -162,16 +180,19 @@ export function CvPreviewPanel() {
                   >
                     {temp.name}
                     {temp.type === 'free' ? (
-                       <span className="text-xs text-muted-foreground mt-2">Free</span>
+                       <span className="text-xs text-green-600 font-medium mt-2">Free</span>
                     ) : isPremiumUnlocked && template === temp.id ? (
                        <span className="flex items-center gap-1 text-xs text-green-600 mt-2">
                             <CheckCircle className="h-3 w-3" /> Unlocked
                         </span>
                     ) : (
-                        <>
-                            <span className="text-xs text-muted-foreground mt-2">1500 PKR</span>
-                            <Lock className="h-3 w-3 absolute top-2 right-2 text-primary" />
-                        </>
+                        <div className="w-full" onClick={() => handlePurchaseClick(temp.id)}>
+                            <span className="text-xs text-primary font-semibold mt-2 block text-center">1500 PKR</span>
+                            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
+                                <Lock className="h-3 w-3"/>
+                                <span>Unlock</span>
+                            </div>
+                        </div>
                     )}
                   </Label>
                 </div>
@@ -283,34 +304,66 @@ export function CvPreviewPanel() {
         </DialogContent>
       </Dialog>
       
-      <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
-        <DialogContent>
+       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Unlock Premium Template</DialogTitle>
-            <DialogDescription>
-              To purchase the "{templateToPurchase}" template for 1500 PKR ($5), please complete the payment and submit the details below. Access is valid for 24 hours.
+             <div className="mx-auto w-fit mb-4 p-3 bg-primary/10 rounded-full">
+                <QuickCvIcon className="h-10 w-10 text-primary" />
+             </div>
+            <DialogTitle className="text-center text-2xl">Unlock Premium Access</DialogTitle>
+            <DialogDescription className="text-center">
+              Purchase the "{templateToPurchase}" template for 24 hours.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-             <div className="p-4 bg-muted rounded-lg text-center">
-                <p className="font-semibold">EasyPaisa Account</p>
-                <p className="text-2xl font-bold font-mono tracking-wider text-primary">03465496360</p>
+          <div className="py-4">
+            <div className="grid grid-cols-2 gap-2 mb-4">
+                {paymentMethods.map(method => (
+                    <Button 
+                        key={method.id} 
+                        variant={selectedPaymentMethod === method.id ? 'default' : 'outline'}
+                        onClick={() => setSelectedPaymentMethod(method.id)}
+                        className="flex items-center justify-start gap-2 p-2 h-auto"
+                        disabled={method.id !== 'bank'} // Only enable bank for this demo
+                    >
+                       {method.icon}
+                        <span className="text-sm">{method.name}</span>
+                    </Button>
+                ))}
             </div>
-            <p className="text-xs text-muted-foreground">After payment, please enter the Transaction ID and upload a screenshot of your receipt. An admin will verify your purchase within 24 hours.</p>
-            <div className='space-y-2'>
-                <Label htmlFor="trxId">Transaction ID</Label>
-                <Input id="trxId" placeholder="e.g., 1234567890" value={trxId} onChange={e => setTrxId(e.target.value)} />
+            
+            <div className="p-4 bg-muted rounded-lg text-center my-4">
+                <p className="text-sm text-muted-foreground">Total Amount</p>
+                <p className="text-3xl font-bold font-mono tracking-wider text-primary">1500 PKR</p>
+                <p className="text-xs text-muted-foreground">~ $5 USD</p>
             </div>
-             <div className='space-y-2'>
-                <Label htmlFor="receipt">Payment Screenshot</Label>
-                <Input id="receipt" type="file" onChange={e => setReceipt(e.target.files?.[0] || null)} />
-            </div>
+            
+            {selectedPaymentMethod === 'bank' && (
+                <div className="space-y-4 text-center">
+                    <p className="text-sm text-muted-foreground">
+                        Please transfer to the account below and submit your Transaction ID for verification.
+                    </p>
+                    <div className="p-3 bg-background rounded-lg border">
+                        <p className="text-xs text-muted-foreground">EasyPaisa Account</p>
+                        <p className="text-lg font-bold font-mono tracking-wider">03465496360</p>
+                    </div>
+                    <div className='space-y-2 text-left'>
+                        <Label htmlFor="trxId">Transaction ID</Label>
+                        <Input id="trxId" placeholder="e.g., 1234567890" value={trxId} onChange={e => setTrxId(e.target.value)} />
+                    </div>
+                </div>
+            )}
+            {selectedPaymentMethod !== 'bank' && (
+                <div className="text-center text-sm text-muted-foreground p-4 bg-muted rounded-lg">
+                    <p>This payment method is for demonstration only.</p>
+                    <p>Please select "Bank / EasyPaisa" to continue with the mock payment flow.</p>
+                </div>
+            )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)} disabled={isSubmitting}>Cancel</Button>
-            <Button onClick={handlePaymentSubmit} disabled={isSubmitting}>
+          <DialogFooter className="flex-col gap-2">
+            <Button onClick={handlePaymentSubmit} disabled={isSubmitting || selectedPaymentMethod !== 'bank'}>
               {isSubmitting ? 'Submitting...' : 'Submit for Verification'}
             </Button>
+            <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)} disabled={isSubmitting}>Cancel</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
