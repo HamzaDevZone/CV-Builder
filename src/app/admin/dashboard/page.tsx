@@ -10,14 +10,8 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/header';
 import { CheckCircle, Clock } from 'lucide-react';
+import type { Payment } from '@/lib/types';
 
-interface Payment {
-  userId: string;
-  userEmail: string;
-  transactionId: string;
-  status: 'pending' | 'approved';
-  timestamp: string; // ISO string
-}
 
 export default function AdminDashboard() {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -52,15 +46,15 @@ export default function AdminDashboard() {
     fetchPayments();
   }, [router, toast]);
 
-  const handleApprove = async (userId: string) => {
+  const handleApprove = async (transactionId: string) => {
     try {
-      await approvePayment(userId);
+      await approvePayment(transactionId);
       setPayments(prev =>
-        prev.map(p => (p.userId === userId ? { ...p, status: 'approved' } : p))
+        prev.map(p => (p.transactionId === transactionId ? { ...p, status: 'approved' } : p))
       );
       toast({
         title: 'Success',
-        description: `Payment approved for user ${userId}.`,
+        description: `Payment ${transactionId} approved.`,
         className: 'bg-green-500 text-white',
       });
     } catch (error) {
@@ -91,6 +85,7 @@ export default function AdminDashboard() {
                             <TableHeader>
                             <TableRow>
                                 <TableHead>User Email</TableHead>
+                                <TableHead>Template</TableHead>
                                 <TableHead>Transaction ID</TableHead>
                                 <TableHead>Date</TableHead>
                                 <TableHead>Status</TableHead>
@@ -100,14 +95,15 @@ export default function AdminDashboard() {
                             <TableBody>
                             {payments.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center h-24">
+                                    <TableCell colSpan={6} className="text-center h-24">
                                         No payment submissions yet.
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 payments.map((payment) => (
-                                <TableRow key={payment.userId}>
+                                <TableRow key={payment.transactionId}>
                                     <TableCell className="font-medium">{payment.userEmail}</TableCell>
+                                    <TableCell className='capitalize'>{payment.templateId}</TableCell>
                                     <TableCell>{payment.transactionId}</TableCell>
                                     <TableCell>{new Date(payment.timestamp).toLocaleString()}</TableCell>
                                     <TableCell>
@@ -121,7 +117,7 @@ export default function AdminDashboard() {
                                     </TableCell>
                                     <TableCell className="text-right">
                                     {payment.status === 'pending' && (
-                                        <Button size="sm" onClick={() => handleApprove(payment.userId)}>
+                                        <Button size="sm" onClick={() => handleApprove(payment.transactionId)}>
                                         Approve
                                         </Button>
                                     )}

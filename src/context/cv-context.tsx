@@ -32,7 +32,6 @@ interface CvContextType {
   backgroundColor: string;
   setBackgroundColor: (color: string) => void;
   isPremiumUnlocked: boolean;
-  unlockPremium: () => void;
 }
 
 const CvContext = createContext<CvContextType | undefined>(undefined);
@@ -49,26 +48,26 @@ export function CvProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const checkPremium = async () => {
+      if (!template) return;
       try {
-        const status = await getPremiumStatus(userId);
+        const status = await getPremiumStatus({ userId, templateId: template });
         setIsPremiumUnlocked(status);
       } catch (error) {
         console.error("Failed to check premium status:", error);
+        setIsPremiumUnlocked(false);
       }
     };
+    
     checkPremium();
     
-    // Periodically check for status changes
+    // Periodically check for status changes, especially around template changes
     const interval = setInterval(checkPremium, 5000); // Check every 5 seconds
     
     return () => clearInterval(interval);
-  }, [userId]);
-
-
-  const unlockPremium = () => setIsPremiumUnlocked(true);
+  }, [userId, template]);
 
   return (
-    <CvContext.Provider value={{ cvData, setCvData, template, setTemplate, accentColor, setAccentColor, backgroundColor, setBackgroundColor, isPremiumUnlocked, unlockPremium }}>
+    <CvContext.Provider value={{ cvData, setCvData, template, setTemplate, accentColor, setAccentColor, backgroundColor, setBackgroundColor, isPremiumUnlocked }}>
       {children}
     </CvContext.Provider>
   );

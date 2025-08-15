@@ -36,20 +36,24 @@ export function CvPreviewPanel() {
   const [aiFeedback, setAiFeedback] = useState('');
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [templateToPurchase, setTemplateToPurchase] = useState<Template | null>(null);
   const [trxId, setTrxId] = useState('');
   const [receipt, setReceipt] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { toast } = useToast();
+  
+  const isCurrentTemplatePremium = templates.find(t => t.id === template)?.type === 'premium';
+  const isCurrentTemplateUnlocked = isCurrentTemplatePremium && isPremiumUnlocked;
 
   const handleDownload = () => {
-    const selectedTemplate = templates.find(t => t.id === template);
-    if (selectedTemplate?.type === 'premium' && !isPremiumUnlocked) {
+    if (isCurrentTemplatePremium && !isCurrentTemplateUnlocked) {
       toast({
         title: 'Premium Template Locked',
-        description: 'Please complete payment to unlock this template.',
+        description: 'Please complete payment to unlock this template for download.',
         variant: 'destructive',
       });
+      setTemplateToPurchase(template);
       setIsPaymentDialogOpen(true);
       return;
     }
@@ -76,27 +80,32 @@ export function CvPreviewPanel() {
   };
   
   const handleTemplateChange = (value: Template) => {
-    const selectedTemplate = templates.find(t => t.id === value);
-    if (selectedTemplate?.type === 'premium' && !isPremiumUnlocked) {
-      setIsPaymentDialogOpen(true);
-    }
     setTemplate(value);
   }
 
   const handlePaymentSubmit = async () => {
-    if (!trxId || !receipt) {
+    if (!trxId || !receipt || !templateToPurchase) {
       toast({
         title: 'Missing Information',
-        description: 'Please provide both a transaction ID and a receipt screenshot.',
+        description: 'Please provide a transaction ID, receipt, and select a template.',
         variant: 'destructive',
       });
       return;
     }
     setIsSubmitting(true);
     try {
-      await submitPayment({ userId: 'user-123', transactionId: trxId, userEmail: cvData.personalDetails.email || "not-provided" });
+      await submitPayment({ 
+        userId: 'user-123', 
+        transactionId: trxId, 
+        userEmail: cvData.personalDetails.email || "not-provided",
+        templateId: templateToPurchase
+      });
       
       setIsPaymentDialogOpen(false);
+      setTemplateToPurchase(null);
+      setTrxId('');
+      setReceipt(null);
+
       toast({
         title: 'Payment Submitted!',
         description: 'Your payment is under review. An admin will approve it shortly.',
@@ -141,7 +150,7 @@ export function CvPreviewPanel() {
                     {temp.name}
                     {temp.type === 'free' ? (
                        <span className="text-xs text-muted-foreground mt-2">Free</span>
-                    ) : isPremiumUnlocked ? (
+                    ) : isPremiumUnlocked && template === temp.id ? (
                        <span className="flex items-center gap-1 text-xs text-green-600 mt-2">
                             <CheckCircle className="h-3 w-3" /> Unlocked
                         </span>
@@ -217,7 +226,7 @@ export function CvPreviewPanel() {
             template={template}
             accentColor={accentColor}
             backgroundColor={backgroundColor}
-            isPremiumLocked={!isPremiumUnlocked && templates.find(t => t.id === template)?.type === 'premium'}
+            isPremiumLocked={isCurrentTemplatePremium && !isCurrentTemplateUnlocked}
           />
         </div>
       </div>
@@ -242,9 +251,9 @@ export function CvPreviewPanel() {
       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Unlock Premium Templates</DialogTitle>
+            <DialogTitle>Unlock Premium Template</DialogTitle>
             <DialogDescription>
-              To purchase premium templates for 1500 PKR ($5), please complete the payment and submit the details below.
+              To purchase the "{templateToPurchase}" template for 1500 PKR ($5), please complete the payment and submit the details below. Access is valid for 24 hours.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
