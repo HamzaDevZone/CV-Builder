@@ -186,7 +186,7 @@ export function CvPreviewPanel() {
                             <CheckCircle className="h-3 w-3" /> Unlocked
                         </span>
                     ) : (
-                        <div className="w-full" onClick={() => handlePurchaseClick(temp.id)}>
+                        <div className="w-full" onClick={(e) => { e.preventDefault(); handlePurchaseClick(temp.id); }}>
                             <span className="text-xs text-primary font-semibold mt-2 block text-center">1500 PKR</span>
                             <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
                                 <Lock className="h-3 w-3"/>

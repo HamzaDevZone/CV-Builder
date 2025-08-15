@@ -17,7 +17,7 @@ export async function enhanceCv(input: CvEnhancementToolInput): Promise<string> 
 }
 
 export async function submitPayment(data: { userId: string; transactionId: string, userEmail: string; templateId: Template }) {
-    console.log("Submitting payment for user:", data.userId, "for template", data.templateId);
+    console.log("Submitting payment for user:", data.userId, "for template", data.templateId, "with email", data.userEmail);
     // Avoid duplicate pending payments
     if (!payments.some(p => p.transactionId === data.transactionId)) {
        payments.push({ ...data, status: 'pending', timestamp: new Date() });
