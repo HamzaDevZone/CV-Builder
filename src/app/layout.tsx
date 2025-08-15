@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'CVPak Builder',
+  title: 'Quick CV Maker',
   description: 'Build professional CVs and resumes with ease. Choose from free and premium templates.',
 };
 

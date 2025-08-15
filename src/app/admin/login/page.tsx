@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { adminLogin } from '@/lib/actions';
-import { CVPakIcon } from '@/components/icons';
+import { QuickCvIcon } from '@/components/icons';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -47,7 +47,7 @@ export default function AdminLoginPage() {
         <form onSubmit={handleLogin}>
           <CardHeader className="text-center">
              <div className="mx-auto w-fit mb-4 p-3 bg-primary/10 rounded-full">
-                <CVPakIcon className="h-10 w-10 text-primary" />
+                <QuickCvIcon className="h-10 w-10 text-primary" />
              </div>
             <CardTitle>Admin Panel</CardTitle>
             <CardDescription>Enter admin credentials to access the dashboard.</CardDescription>
