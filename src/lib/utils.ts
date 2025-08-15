@@ -17,6 +17,9 @@ export function serializeCvData(data: CvData): string {
   content += `Address: ${data.personalDetails.address}\n`;
   content += `LinkedIn: ${data.personalDetails.linkedin}\n`;
   content += `Website: ${data.personalDetails.website}\n\n`;
+  if (data.personalDetails.photo) {
+    content += `The user has provided a photo.\n\n`;
+  }
 
   content += `--- Summary ---\n${data.personalDetails.summary}\n\n`;
 

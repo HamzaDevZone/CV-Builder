@@ -21,6 +21,7 @@ const config = {
         body: ['Inter', 'sans-serif'],
         headline: ['Inter', 'sans-serif'],
         code: ['monospace'],
+        jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
       },
       colors: {
         border: 'hsl(var(--border))',

@@ -1,4 +1,5 @@
 export interface PersonalDetails {
+  photo?: string;
   name: string;
   jobTitle: string;
   email: string;

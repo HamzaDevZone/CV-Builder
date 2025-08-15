@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { type CvData } from './types';
 
 export const personalDetailsSchema = z.object({
+  photo: z.string().optional(),
   name: z.string().min(1, 'Full name is required'),
   jobTitle: z.string().min(1, 'Job title is required'),
   email: z.string().email('Invalid email address').min(1, 'Email is required'),
@@ -47,6 +48,7 @@ export const cvFormSchema = z.object({
 
 export const defaultCvData: CvData = {
   personalDetails: {
+    photo: 'https://placehold.co/400x400.png',
     name: 'Ayesha Khan',
     jobTitle: 'Aspiring Web Developer',
     email: 'ayesha.khan@example.com',
