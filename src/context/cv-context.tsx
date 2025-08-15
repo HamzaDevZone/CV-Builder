@@ -1,11 +1,9 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { type CvData } from '@/lib/types';
+import { type CvData, type Template } from '@/lib/types';
 import { defaultCvData } from '@/lib/schemas';
 import { getPremiumStatus } from '@/lib/actions';
-
-type Template = 'classic' | 'modern';
 
 export const accentColors = [
   '#2563eb', // Default Blue

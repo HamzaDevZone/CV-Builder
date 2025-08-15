@@ -41,3 +41,5 @@ export interface CvData {
   education: Education[];
   skills: Skill[];
 }
+
+export type Template = 'classic' | 'modern' | 'creative';

@@ -1,7 +1,7 @@
 'use client';
 
-import { type CvData } from '@/lib/types';
-import { Mail, Phone, Linkedin, Globe, MapPin, Lock, User as UserIcon } from 'lucide-react';
+import { type CvData, type Template } from '@/lib/types';
+import { Mail, Phone, Linkedin, Globe, MapPin, Lock, User as UserIcon, Star, Briefcase, GraduationCap } from 'lucide-react';
 import Image from 'next/image';
 import type { CSSProperties } from 'react';
 import { cn } from '@/lib/utils';
@@ -10,7 +10,7 @@ import { backgroundColors } from '@/context/cv-context';
 
 interface CvPreviewProps {
   data: CvData;
-  template: 'classic' | 'modern';
+  template: Template;
   accentColor: string;
   backgroundColor: string;
   isPremiumLocked?: boolean;
@@ -33,18 +33,108 @@ export function CvPreview({ data, template, accentColor, backgroundColor, isPrem
     'text-[--foreground-cv] bg-[--background-cv]',
   );
 
+  const renderPremiumLock = () => isPremiumLocked && (
+     <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-4">
+        <Lock className="h-16 w-16 text-primary/50" style={{ color: 'var(--accent-color)', opacity: 0.5 }} />
+        <p className="mt-4 text-2xl font-bold text-primary/70" style={{ color: 'var(--accent-color)', opacity: 0.7 }}>Premium Template</p>
+        <p className="text-muted-foreground">Complete payment to unlock and remove this watermark.</p>
+    </div>
+  );
 
   const renderContent = () => {
+    if (template === 'creative') {
+       return (
+        <div style={cvStyles} className={cn(cvClasses, "p-8 font-sans font-jakarta flex flex-col min-h-full")}>
+          {renderPremiumLock()}
+          
+          <header className="flex items-center gap-6">
+             <div className="w-32 h-32 rounded-full bg-secondary overflow-hidden border-4 shadow-lg flex-shrink-0" style={{ borderColor: 'var(--accent-color)'}}>
+              {personalDetails.photo ? (
+                <Image src={personalDetails.photo} alt={personalDetails.name} width={128} height={128} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                  <UserIcon className="w-16 h-16 text-muted-foreground/50"/>
+                </div>
+              )}
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-[--foreground-cv]">{personalDetails.name || 'Your Name'}</h1>
+              <p className="text-xl text-[--accent-color] font-medium">{personalDetails.jobTitle || 'Professional Title'}</p>
+            </div>
+          </header>
+
+          <div className="mt-6 border-t-2 pt-4" style={{borderColor: 'var(--accent-color)'}}>
+            <p className="text-sm leading-relaxed text-[--secondary-foreground-cv]">{personalDetails.summary || 'A brief professional summary...'}</p>
+          </div>
+          
+          <div className="mt-8 grid grid-cols-12 gap-8 flex-grow">
+            {/* Left Column */}
+            <div className="col-span-4 space-y-8">
+               <div>
+                  <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] mb-3">Contact</h2>
+                  <div className="space-y-2 text-sm text-[--secondary-foreground-cv]">
+                    {personalDetails.email && <p className="flex items-center gap-2 break-all"><Mail className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.email}</span></p>}
+                    {personalDetails.phone && <p className="flex items-center gap-2 break-all"><Phone className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.phone}</span></p>}
+                    {personalDetails.address && <p className="flex items-center gap-2 break-all"><MapPin className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.address}</span></p>}
+                    {personalDetails.linkedin && <p className="flex items-center gap-2 break-all"><Linkedin className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.linkedin}</span></p>}
+                    {personalDetails.website && <p className="flex items-center gap-2 break-all"><Globe className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.website}</span></p>}
+                  </div>
+                </div>
+                <div>
+                    <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] mb-3">Skills</h2>
+                    <ul className="space-y-1.5">
+                        {skills.map(skill => skill.name && (
+                            <li key={skill.id} className="flex items-center gap-2">
+                                <Star className="text-[--accent-color]" size={14}/>
+                                <span className="text-sm font-medium">{skill.name}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="col-span-8 border-l-2 pl-8 space-y-8" style={{borderColor: 'var(--accent-color)'}}>
+                <div>
+                    <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] mb-4 flex items-center gap-3"><Briefcase />Experience</h2>
+                    <div className="space-y-5">
+                    {workExperience.map(exp => exp.jobTitle && (
+                        <div key={exp.id}>
+                        <div className="flex justify-between items-baseline">
+                            <h3 className="text-lg font-semibold text-[--foreground-cv]">{exp.jobTitle}</h3>
+                            <p className="text-xs font-medium text-[--muted-foreground-cv]">{exp.startDate} - {exp.endDate}</p>
+                        </div>
+                        <p className="text-md font-medium text-[--secondary-foreground-cv]">{exp.company} | {exp.location}</p>
+                        <p className="mt-2 text-sm whitespace-pre-wrap text-[--secondary-foreground-cv]">{exp.description}</p>
+                        </div>
+                    ))}
+                    </div>
+                </div>
+                 <div>
+                    <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] mb-4 flex items-center gap-3"><GraduationCap/>Education</h2>
+                    <div className="space-y-5">
+                    {education.map(edu => edu.degree && (
+                        <div key={edu.id}>
+                        <div className="flex justify-between items-baseline">
+                            <h3 className="text-lg font-semibold text-[--foreground-cv]">{edu.degree}</h3>
+                            <p className="text-xs font-medium text-[--muted-foreground-cv]">{edu.startDate} - {edu.endDate}</p>
+                        </div>
+                        <p className="text-md font-medium text-[--secondary-foreground-cv]">{edu.institution} | {edu.location}</p>
+                            <p className="mt-2 text-sm whitespace-pre-wrap text-[--secondary-foreground-cv]">{edu.description}</p>
+                        </div>
+                    ))}
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
     if (template === 'modern') {
       return (
         <div style={cvStyles} className={cn(cvClasses, "p-8 font-sans font-jakarta grid grid-cols-12 gap-x-10 min-h-full")}>
-           {isPremiumLocked && (
-             <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-4">
-                <Lock className="h-16 w-16 text-primary/50" style={{ color: 'var(--accent-color)', opacity: 0.5 }} />
-                <p className="mt-4 text-2xl font-bold text-primary/70" style={{ color: 'var(--accent-color)', opacity: 0.7 }}>Premium Template</p>
-                <p className="text-muted-foreground">Complete payment to unlock and remove this watermark.</p>
-            </div>
-          )}
+           {renderPremiumLock()}
 
           {/* Left Column */}
           <div className="col-span-4 bg-[--accent-color]/5 p-6 rounded-lg flex flex-col items-center text-center">

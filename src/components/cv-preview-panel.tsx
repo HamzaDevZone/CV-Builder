@@ -22,6 +22,13 @@ import { Input } from './ui/input';
 import { serializeCvData } from '@/lib/utils';
 import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
+import type { Template } from '@/lib/types';
+
+const templates: { id: Template; name: string; type: 'free' | 'premium' }[] = [
+    { id: 'classic', name: 'Classic', type: 'free' },
+    { id: 'modern', name: 'Modern', type: 'premium' },
+    { id: 'creative', name: 'Creative', type: 'premium' },
+];
 
 export function CvPreviewPanel() {
   const { cvData, template, setTemplate, isPremiumUnlocked, accentColor, setAccentColor, backgroundColor, setBackgroundColor } = useCvContext();
@@ -36,7 +43,8 @@ export function CvPreviewPanel() {
   const { toast } = useToast();
 
   const handleDownload = () => {
-    if (template === 'modern' && !isPremiumUnlocked) {
+    const selectedTemplate = templates.find(t => t.id === template);
+    if (selectedTemplate?.type === 'premium' && !isPremiumUnlocked) {
       toast({
         title: 'Premium Template Locked',
         description: 'Please complete payment to unlock this template.',
@@ -67,8 +75,9 @@ export function CvPreviewPanel() {
     }
   };
   
-  const handleTemplateChange = (value: 'classic' | 'modern') => {
-    if (value === 'modern' && !isPremiumUnlocked) {
+  const handleTemplateChange = (value: Template) => {
+    const selectedTemplate = templates.find(t => t.id === value);
+    if (selectedTemplate?.type === 'premium' && !isPremiumUnlocked) {
       setIsPaymentDialogOpen(true);
     }
     setTemplate(value);
@@ -119,32 +128,32 @@ export function CvPreviewPanel() {
             <Label className="font-semibold flex items-center gap-2"><Palette className="h-4 w-4"/>Template</Label>
              <RadioGroup
               value={template}
-              onValueChange={(value) => handleTemplateChange(value as 'classic' | 'modern')}
-              className="grid grid-cols-2 gap-4"
+              onValueChange={(value) => handleTemplateChange(value as Template)}
+              className="grid grid-cols-2 lg:grid-cols-3 gap-4"
             >
-              <div>
-                <RadioGroupItem value="classic" id="classic" className="sr-only" />
-                <Label htmlFor="classic" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer [&:has([data-state=checked])]:border-primary">
-                  Classic
-                  <span className="text-xs text-muted-foreground mt-2">Free</span>
-                </Label>
-              </div>
-              <div>
-                <RadioGroupItem value="modern" id="modern" className="sr-only" />
-                <Label htmlFor="modern" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer [&:has([data-state=checked])]:border-primary relative">
-                    Modern
-                    {isPremiumUnlocked ? (
-                        <span className="flex items-center gap-1 text-xs text-green-600 mt-2">
+              {templates.map((temp) => (
+                <div key={temp.id}>
+                  <RadioGroupItem value={temp.id} id={temp.id} className="sr-only" />
+                  <Label
+                    htmlFor={temp.id}
+                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer [&:has([data-state=checked])]:border-primary relative"
+                  >
+                    {temp.name}
+                    {temp.type === 'free' ? (
+                       <span className="text-xs text-muted-foreground mt-2">Free</span>
+                    ) : isPremiumUnlocked ? (
+                       <span className="flex items-center gap-1 text-xs text-green-600 mt-2">
                             <CheckCircle className="h-3 w-3" /> Unlocked
                         </span>
                     ) : (
                         <>
-                            <span className="text-xs text-muted-foreground mt-2">$5.00</span>
+                            <span className="text-xs text-muted-foreground mt-2">1500 PKR</span>
                             <Lock className="h-3 w-3 absolute top-2 right-2 text-primary" />
                         </>
                     )}
-                </Label>
-              </div>
+                  </Label>
+                </div>
+              ))}
             </RadioGroup>
           </div>
           <div className="space-y-3">
@@ -208,7 +217,7 @@ export function CvPreviewPanel() {
             template={template}
             accentColor={accentColor}
             backgroundColor={backgroundColor}
-            isPremiumLocked={template === 'modern' && !isPremiumUnlocked}
+            isPremiumLocked={!isPremiumUnlocked && templates.find(t => t.id === template)?.type === 'premium'}
           />
         </div>
       </div>
@@ -233,9 +242,9 @@ export function CvPreviewPanel() {
       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Unlock Premium Template</DialogTitle>
+            <DialogTitle>Unlock Premium Templates</DialogTitle>
             <DialogDescription>
-              To purchase the Modern template for $5 (or equivalent PKR), please complete the payment and submit the details below.
+              To purchase premium templates for 1500 PKR ($5), please complete the payment and submit the details below.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
