@@ -41,12 +41,27 @@ interface CvContextType {
   setBackgroundColor: (color: string) => void;
   fontFamily: string;
   setFontFamily: (font: string) => void;
-  isPremiumUnlocked: boolean;
+  isPremiumUnlocked: (templateId: Template) => boolean;
   pendingTemplate: { id: Template, until: number } | null;
   refreshStatus: () => void;
 }
 
 const CvContext = createContext<CvContextType | undefined>(undefined);
+
+// Define all templates outside the component
+const allTemplates = [
+    { id: 'classic', type: 'free'}, { id: 'modern', type: 'premium'},
+    { id: 'creative', type: 'premium'}, { id: 'professional', type: 'premium'},
+    { id: 'minimalist', type: 'premium'}, { id: 'executive', type: 'premium'},
+    { id: 'elegant', type: 'premium'}, { id: 'bold', type: 'premium'},
+    { id: 'academic', type: 'premium'}, { id: 'tech', type: 'premium'},
+    { id: 'designer', type: 'premium'}, { id: 'corporate', type: 'premium'},
+    { id: 'artistic', type: 'premium'}, { id: 'sleek', type: 'premium'},
+    { id: 'vintage', type: 'premium'}, { id: 'premium-plus', type: 'premium'},
+    { id: 'platinum', type: 'premium'}, { id: 'luxe', type: 'premium'},
+    { id: 'visionary', type: 'premium'}, { id: 'prestige', type: 'premium'},
+    { id: 'avant-garde', type: 'premium'}
+];
 
 export function CvProvider({ children }: { children: ReactNode }) {
   const [cvData, setCvData] = useState<CvData>(defaultCvData);
@@ -54,72 +69,60 @@ export function CvProvider({ children }: { children: ReactNode }) {
   const [accentColor, setAccentColor] = useState<string>(accentColors[0]);
   const [backgroundColor, setBackgroundColor] = useState<string>(backgroundColors.light);
   const [fontFamily, setFontFamily] = useState<string>(fonts.inter.cssValue);
-  const [isPremiumUnlocked, setIsPremiumUnlocked] = useState(false);
+  
+  const [premiumStatus, setPremiumStatus] = useState<Record<Template, boolean>>({} as Record<Template, boolean>);
   const [pendingTemplate, setPendingTemplate] = useState<{ id: Template, until: number } | null>(null);
 
-  
-  const checkPremium = useCallback(async () => {
-      const username = localStorage.getItem('cv-username');
-      const selectedTemplate = allTemplates.find(t => t.id === template);
-      if (!selectedTemplate || !username || selectedTemplate.type === 'free') {
-        setIsPremiumUnlocked(false);
+  const checkAllPremiumStatuses = useCallback(async () => {
+    const username = localStorage.getItem('cv-username');
+    if (!username) {
+        setPremiumStatus({} as Record<Template, boolean>);
         setPendingTemplate(null);
         return;
-      };
-      
-      try {
-        const { isUnlocked, pendingUntil } = await getPremiumStatus({ username, templateId: template });
-        setIsPremiumUnlocked(isUnlocked);
+    }
 
-        if (pendingUntil && pendingUntil > Date.now()) {
-          setPendingTemplate({ id: template, until: pendingUntil });
-        } else {
-          setPendingTemplate(null);
+    let hasPending = false;
+    const newStatus: Record<Template, boolean> = {} as any;
+
+    for (const t of allTemplates) {
+        if (t.type === 'premium') {
+            try {
+                const { isUnlocked, pendingUntil } = await getPremiumStatus({ username, templateId: t.id });
+                newStatus[t.id] = isUnlocked;
+
+                if (pendingUntil && pendingUntil > Date.now()) {
+                    setPendingTemplate({ id: t.id, until: pendingUntil });
+                    hasPending = true;
+                }
+            } catch (error) {
+                console.error(`Failed to check premium status for ${t.id}:`, error);
+                newStatus[t.id] = false;
+            }
         }
+    }
 
-      } catch (error) {
-        console.error("Failed to check premium status:", error);
-        setIsPremiumUnlocked(false);
+    setPremiumStatus(newStatus);
+    if (!hasPending) {
         setPendingTemplate(null);
-      }
-    }, [template]); // Dependency on template is key
+    }
+  }, []);
     
   useEffect(() => {
-    checkPremium();
-    // Periodically check for status changes, especially around template changes
-    const interval = setInterval(checkPremium, 5000); // Check every 5 seconds
+    checkAllPremiumStatuses();
+    const interval = setInterval(checkAllPremiumStatuses, 5000); // Check every 5 seconds
     
     return () => clearInterval(interval);
-  }, [template, checkPremium]);
+  }, [checkAllPremiumStatuses]);
 
   const refreshStatus = () => {
-      checkPremium();
+      checkAllPremiumStatuses();
   }
 
-  // Need to find all templates to check status on
-  const allTemplates = [
-      { id: 'classic', type: 'free'},
-      { id: 'modern', type: 'premium'},
-      { id: 'creative', type: 'premium'},
-      { id: 'professional', type: 'premium'},
-      { id: 'minimalist', type: 'premium'},
-      { id: 'executive', type: 'premium'},
-      { id: 'elegant', type: 'premium'},
-      { id: 'bold', type: 'premium'},
-      { id: 'academic', type: 'premium'},
-      { id: 'tech', type: 'premium'},
-      { id: 'designer', type: 'premium'},
-      { id: 'corporate', type: 'premium'},
-      { id: 'artistic', type: 'premium'},
-      { id: 'sleek', type: 'premium'},
-      { id: 'vintage', type: 'premium'},
-      { id: 'premium-plus', type: 'premium'},
-      { id: 'platinum', type: 'premium'},
-      { id: 'luxe', type: 'premium'},
-      { id: 'visionary', type: 'premium'},
-      { id: 'prestige', type: 'premium'},
-      { id: 'avant-garde', type: 'premium'}
-  ]
+  const isPremiumUnlocked = (templateId: Template): boolean => {
+      const t = allTemplates.find(t => t.id === templateId);
+      if (!t || t.type === 'free') return true;
+      return premiumStatus[templateId] || false;
+  }
 
   return (
     <CvContext.Provider value={{ cvData, setCvData, template, setTemplate, accentColor, setAccentColor, backgroundColor, setBackgroundColor, fontFamily, setFontFamily, isPremiumUnlocked, pendingTemplate, refreshStatus }}>

@@ -159,7 +159,7 @@ export function CvPreviewPanel() {
   
   const selectedTemplateDetails = allTemplates.find(t => t.id === template);
   const isCurrentTemplatePremium = selectedTemplateDetails?.type === 'premium';
-  const isCurrentTemplateUnlocked = !isCurrentTemplatePremium || isPremiumUnlocked;
+  const isCurrentTemplateUnlocked = !isCurrentTemplatePremium || isPremiumUnlocked(template);
   const currentPrice = allTemplates.find(t => t.id === templateToPurchase)?.price;
   const currentUsdPrice = allTemplates.find(t => t.id === templateToPurchase)?.usdPrice;
 
@@ -226,10 +226,11 @@ export function CvPreviewPanel() {
     }
   };
   
-  const handleTemplateChange = (value: Template) => {
+  const handleTemplateSelect = (value: Template) => {
     const newTemplate = allTemplates.find(t => t.id === value);
-    if(newTemplate?.type === 'premium' && !isPremiumUnlocked){
+    if(newTemplate?.type === 'premium' && !isPremiumUnlocked(value)){
         setTemplateToPurchase(newTemplate.id);
+        setIsPaymentDialogOpen(true);
     }
     setTemplate(value);
   }
@@ -238,7 +239,7 @@ export function CvPreviewPanel() {
     e.preventDefault();
     e.stopPropagation();
     setTemplateToPurchase(templateId);
-    setTemplate(templateId);
+    setTemplate(templateId); // Select the template for purchase
     setIsPaymentDialogOpen(true);
   }
 
@@ -345,46 +346,55 @@ export function CvPreviewPanel() {
         <CardContent className="p-4 space-y-6">
           <div className="space-y-4">
               <Label className="font-semibold flex items-center gap-2 text-base"><Palette className="h-5 w-5"/>Choose Your Template</Label>
-              <RadioGroup value={template} onValueChange={(value) => handleTemplateChange(value as Template)}>
+              <div className="space-y-4">
                 {templateTiers.map(tier => (
                   <div key={tier.title} className="p-4 rounded-lg border bg-background">
                     <h3 className="font-bold text-lg">{tier.title}</h3>
                     <p className="text-sm text-muted-foreground mb-3">{tier.description}</p>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-                       {tier.templates.map((temp) => (
-                        <div key={temp.id}>
-                          <RadioGroupItem value={temp.id} id={temp.id} className="sr-only" />
-                          <Label
-                            htmlFor={temp.id}
-                            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-3 text-center h-full hover:bg-accent hover:text-accent-foreground cursor-pointer [&:has([data-state=checked])]:border-primary relative transition-all"
-                          >
-                            <span className="font-semibold text-sm mb-1">{temp.name}</span>
-                            {temp.type === 'free' ? (
-                               <span className="text-xs text-green-600 font-medium mt-2 block bg-green-100 px-2 py-0.5 rounded-full">Free</span>
-                            ) : isPremiumUnlocked && template === temp.id ? (
-                               <span className="flex items-center gap-1 text-xs text-green-600 font-medium mt-2 bg-green-100 px-2 py-0.5 rounded-full">
-                                    <CheckCircle className="h-3 w-3" /> Unlocked
-                                </span>
-                            ) : pendingTemplate && pendingTemplate.id === temp.id ? (
-                                <PendingTimer expiryTimestamp={pendingTemplate.until} templateId={temp.id} />
-                            ) : (
-                                <Button size="sm" variant="ghost" className="w-full text-center mt-2 h-auto py-1 px-2" onClick={(e) => handlePurchaseClick(e, temp.id) }>
-                                    <div className='flex flex-col'>
-                                        <span className="text-sm text-primary font-semibold block">{tier.price} PKR / ~${tier.usdPrice}</span>
-                                        <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
-                                            <Lock className="h-3 w-3"/>
-                                            <span>Purchase</span>
+                       {tier.templates.map((temp) => {
+                          const isSelected = template === temp.id;
+                          const isUnlocked = temp.type === 'free' || isPremiumUnlocked(temp.id);
+                          const isPending = pendingTemplate?.id === temp.id;
+
+                          return (
+                            <div key={temp.id} 
+                                className={cn(
+                                "rounded-md border-2 p-3 text-center h-full transition-all flex flex-col items-center justify-between",
+                                isSelected ? "border-primary bg-primary/5" : "border-muted bg-popover",
+                            )}>
+                               <span className="font-semibold text-sm mb-2">{temp.name}</span>
+                               
+                               {isPending ? (
+                                    <PendingTimer expiryTimestamp={pendingTemplate!.until} templateId={temp.id} />
+                               ) : isUnlocked ? (
+                                    isSelected ? (
+                                        <div className="flex items-center gap-1 text-xs text-green-600 font-medium mt-2 bg-green-100 px-2 py-0.5 rounded-full">
+                                            <CheckCircle className="h-3 w-3" /> Selected
                                         </div>
-                                    </div>
-                                </Button>
-                            )}
-                          </Label>
-                        </div>
-                      ))}
+                                    ) : (
+                                        <Button size="sm" variant="outline" className="w-full mt-2" onClick={() => setTemplate(temp.id)}>
+                                            Select
+                                        </Button>
+                                    )
+                               ) : (
+                                    <Button size="sm" variant="ghost" className="w-full text-center mt-2 h-auto py-1 px-2" onClick={(e) => handlePurchaseClick(e, temp.id) }>
+                                        <div className='flex flex-col'>
+                                            <span className="text-sm text-primary font-semibold block">{tier.price} PKR / ~${tier.usdPrice}</span>
+                                            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
+                                                <Lock className="h-3 w-3"/>
+                                                <span>Purchase</span>
+                                            </div>
+                                        </div>
+                                    </Button>
+                               )}
+                            </div>
+                          )
+                       })}
                     </div>
                   </div>
                 ))}
-              </RadioGroup>
+              </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
@@ -510,7 +520,7 @@ export function CvPreviewPanel() {
             accentColor={accentColor}
             backgroundColor={backgroundColor}
             fontFamily={fontFamily}
-            isPremiumLocked={isCurrentTemplatePremium && !isCurrentTemplateUnlocked}
+            isPremiumLocked={!isCurrentTemplateUnlocked}
           />
         </div>
       </div>
