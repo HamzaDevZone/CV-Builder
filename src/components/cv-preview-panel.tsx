@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -81,9 +82,9 @@ const templateTiers: TemplateTier[] = [
         templates: [
             { id: 'corporate', name: 'Corporate', type: 'premium' },
             { id: 'artistic', name: 'Artistic', type: 'premium' },
-            { id: 'sleek', name: 'Sleek', type: 'premium' },
-            { id: 'vintage', name: 'Vintage', type: 'premium' },
-            { id: 'premium-plus', name: 'Premium Plus', type: 'premium' },
+            { id: 'sleek', name: 'Sleek', type_of: 'premium' },
+            { id: 'vintage', name: 'Vintage', type_of: 'premium' },
+            { id: 'premium-plus', name: 'Premium Plus', type_of: 'premium' },
         ]
     },
     {
@@ -152,6 +153,7 @@ export function CvPreviewPanel() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('easypaisa');
   const printRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   
   const { toast } = useToast();
   
@@ -180,19 +182,17 @@ export function CvPreviewPanel() {
   };
   
   const handleDownloadImage = async (format: 'png' | 'jpeg') => {
-    if (!printRef.current) {
+    const node = printRef.current;
+    if (!node) {
         toast({ title: 'Error', description: 'Could not find CV to download.', variant: 'destructive'});
         return;
     };
     setIsDownloading(true);
     try {
-        const toBlob = format === 'png' ? htmlToImage.toPng : htmlToImage.toJpeg;
-        const dataUrl = await toBlob(printRef.current, {
+        const toFn = format === 'png' ? htmlToImage.toPng : htmlToImage.toJpeg;
+        const dataUrl = await toFn(node, {
             quality: 1.0,
-            pixelRatio: 2, // Higher pixel ratio for better quality
-            style: {
-              transform: 'scale(1)', // Ensure no scaling issues
-            }
+            pixelRatio: 2, 
         });
         const link = document.createElement('a');
         link.download = `${cvData.personalDetails.name.replace(/ /g, '_')}_CV.${format}`;
@@ -350,7 +350,7 @@ export function CvPreviewPanel() {
                   <div key={tier.title} className="p-4 rounded-lg border bg-background">
                     <h3 className="font-bold text-lg">{tier.title}</h3>
                     <p className="text-sm text-muted-foreground mb-3">{tier.description}</p>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                        {tier.templates.map((temp) => (
                         <div key={temp.id}>
                           <RadioGroupItem value={temp.id} id={temp.id} className="sr-only" />
@@ -487,9 +487,9 @@ export function CvPreviewPanel() {
         </CardContent>
       </Card>
       
-      {/* This wrapper is used for printing */}
-      <div className="hidden print:block cv-print-area-wrapper">
-        <div ref={printRef} className="aspect-[210/297] cv-print-area">
+      {/* This wrapper is used for printing and image generation */}
+      <div className="hidden print:block fixed top-0 left-0">
+        <div ref={printRef} className="cv-print-area">
           <CvPreview
             data={cvData}
             template={template}
@@ -500,11 +500,11 @@ export function CvPreviewPanel() {
         </div>
       </div>
 
+
       {/* This is for on-screen preview */}
       <div className="mt-8 rounded-lg overflow-hidden shadow-2xl shadow-primary/10 print:hidden">
-        <div className="aspect-[210/297]">
+        <div ref={previewRef} className="aspect-[210/297] w-full">
            <CvPreview
-            ref={printRef} // Attach ref for image download
             data={cvData}
             template={template}
             accentColor={accentColor}

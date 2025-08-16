@@ -1,3 +1,4 @@
+
 'use client';
 import { forwardRef } from 'react';
 import { type CvData, type Template } from '@/lib/types';
@@ -34,6 +35,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
   
   const cvClasses = cn(
     'text-[--foreground-cv] bg-[--background-cv]',
+    'w-full h-full transform origin-top-left',
   );
 
   const renderPremiumLock = () => isPremiumLocked && (
@@ -45,7 +47,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
   );
   
   const renderPlaceholder = (templateName: string) => (
-    <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col min-h-full items-center justify-center text-center relative")}>
+    <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col items-center justify-center text-center relative")}>
         {renderPremiumLock()}
         <h2 className="text-2xl font-bold" style={{color: 'var(--accent-color)'}}>{templateName} Template</h2>
         <p className="text-[--secondary-foreground-cv]">This is a placeholder for the {templateName} template.</p>
@@ -335,8 +337,10 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
   };
 
   return (
-    <div ref={ref} className="bg-card shadow-lg h-full w-full overflow-auto">
-      {renderContent()}
+    <div ref={ref} className="bg-card shadow-lg h-full w-full overflow-y-auto">
+      <div className={cvClasses}>
+        {renderContent()}
+      </div>
     </div>
   );
 });

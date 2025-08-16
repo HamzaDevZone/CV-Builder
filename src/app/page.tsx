@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -49,7 +50,7 @@ export default function BuilderPage() {
               <div className="rounded-lg">
                 <CvForm />
               </div>
-              <div className="lg:sticky top-8 self-start">
+              <div className="lg:sticky lg:top-8 self-start">
                 <CvPreviewPanel />
               </div>
             </div>
