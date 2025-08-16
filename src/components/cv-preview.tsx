@@ -1,5 +1,5 @@
 'use client';
-
+import { forwardRef } from 'react';
 import { type CvData, type Template } from '@/lib/types';
 import { Mail, Phone, Linkedin, Globe, MapPin, Lock, User as UserIcon, Star, Briefcase, GraduationCap } from 'lucide-react';
 import Image from 'next/image';
@@ -17,7 +17,8 @@ interface CvPreviewProps {
   isPremiumLocked?: boolean;
 }
 
-export function CvPreview({ data, template, accentColor, backgroundColor, fontFamily, isPremiumLocked = false }: CvPreviewProps) {
+export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
+  ({ data, template, accentColor, backgroundColor, fontFamily, isPremiumLocked = false }, ref) => {
   const { personalDetails, workExperience, education, skills } = data;
 
   const isDarkBackground = [backgroundColors.dark, backgroundColors.gradient].includes(backgroundColor);
@@ -329,8 +330,9 @@ export function CvPreview({ data, template, accentColor, backgroundColor, fontFa
   };
 
   return (
-    <div className="bg-card shadow-lg h-full w-full overflow-auto">
+    <div ref={ref} className="bg-card shadow-lg h-full w-full overflow-auto">
       {renderContent()}
     </div>
   );
-}
+});
+CvPreview.displayName = 'CvPreview';

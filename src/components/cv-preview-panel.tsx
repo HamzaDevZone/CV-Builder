@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useCvContext, accentColors, backgroundColors, fonts } from '@/context/cv-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type, Share2, CreditCard, Upload } from 'lucide-react';
+import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type, Share2, CreditCard, Upload, ChevronDown, FileType } from 'lucide-react';
 import { CvPreview } from './cv-preview';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -26,25 +26,64 @@ import { cn } from '@/lib/utils';
 import type { Template } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { QuickCvIcon } from './icons';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import * as htmlToImage from 'html-to-image';
 
-const templates: { id: Template; name: string; type: 'free' | 'premium', price?: number }[] = [
-    { id: 'classic', name: 'Classic', type: 'free' },
-    { id: 'modern', name: 'Modern', type: 'premium', price: 400 },
-    { id: 'creative', name: 'Creative', type: 'premium', price: 400 },
-    { id: 'professional', name: 'Professional', type: 'premium', price: 400 },
-    { id: 'minimalist', name: 'Minimalist', type: 'premium', price: 400 },
-    { id: 'executive', name: 'Executive', type: 'premium', price: 400 },
-    { id: 'elegant', name: 'Elegant', type: 'premium', price: 700 },
-    { id: 'bold', name: 'Bold', type: 'premium', price: 700 },
-    { id: 'academic', name: 'Academic', type: 'premium', price: 700 },
-    { id: 'tech', name: 'Tech', type: 'premium', price: 700 },
-    { id: 'designer', name: 'Designer', type: 'premium', price: 700 },
-    { id: 'corporate', name: 'Corporate', type: 'premium', price: 900 },
-    { id: 'artistic', name: 'Artistic', type: 'premium', price: 900 },
-    { id: 'sleek', name: 'Sleek', type: 'premium', price: 900 },
-    { id: 'vintage', name: 'Vintage', type: 'premium', price: 900 },
-    { id: 'premium-plus', name: 'Premium Plus', type: 'premium', price: 900 },
+
+type TemplateTier = {
+    title: string;
+    description: string;
+    price?: number;
+    templates: { id: Template; name: string; type: 'free' | 'premium'}[];
+};
+
+const templateTiers: TemplateTier[] = [
+    { 
+        title: 'Free', 
+        description: 'Get started with our classic, professional template.',
+        templates: [
+            { id: 'classic', name: 'Classic', type: 'free' },
+        ]
+    },
+    { 
+        title: 'Standard', 
+        description: 'Well-balanced templates for a variety of roles.',
+        price: 400,
+        templates: [
+            { id: 'modern', name: 'Modern', type: 'premium' },
+            { id: 'creative', name: 'Creative', type: 'premium' },
+            { id: 'professional', name: 'Professional', type: 'premium' },
+            { id: 'minimalist', name: 'Minimalist', type: 'premium' },
+            { id: 'executive', name: 'Executive', type: 'premium' },
+        ]
+    },
+    { 
+        title: 'Premium', 
+        description: 'Elegant and bold designs to make you stand out.',
+        price: 700,
+        templates: [
+            { id: 'elegant', name: 'Elegant', type: 'premium' },
+            { id: 'bold', name: 'Bold', type: 'premium' },
+            { id: 'academic', name: 'Academic', type: 'premium' },
+            { id: 'tech', name: 'Tech', type: 'premium' },
+            { id: 'designer', name: 'Designer', type: 'premium' },
+        ]
+    },
+    { 
+        title: 'Executive', 
+        description: 'Top-tier templates for leadership and artistic roles.',
+        price: 900,
+        templates: [
+            { id: 'corporate', name: 'Corporate', type: 'premium' },
+            { id: 'artistic', name: 'Artistic', type: 'premium' },
+            { id: 'sleek', name: 'Sleek', type: 'premium' },
+            { id: 'vintage', name: 'Vintage', type: 'premium' },
+            { id: 'premium-plus', name: 'Premium Plus', type: 'premium' },
+        ]
+    },
 ];
+const allTemplates = templateTiers.flatMap(tier => tier.templates.map(t => ({...t, price: tier.price})));
+
 
 export function CvPreviewPanel() {
   const { cvData, template, setTemplate, isPremiumUnlocked, accentColor, setAccentColor, backgroundColor, setBackgroundColor, fontFamily, setFontFamily } = useCvContext();
@@ -59,18 +98,19 @@ export function CvPreviewPanel() {
   const [trxId, setTrxId] = useState('');
   const [receipt, setReceipt] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('easypaisa');
+  const printRef = useRef<HTMLDivElement>(null);
   
   const { toast } = useToast();
   
-  const selectedTemplateDetails = templates.find(t => t.id === template);
+  const selectedTemplateDetails = allTemplates.find(t => t.id === template);
   const isCurrentTemplatePremium = selectedTemplateDetails?.type === 'premium';
   const isCurrentTemplateUnlocked = !isCurrentTemplatePremium || isPremiumUnlocked;
   const currentPrice = selectedTemplateDetails?.price;
 
-
-  const handleDownload = () => {
-    if (isCurrentTemplatePremium && !isCurrentTemplateUnlocked) {
+  const handleUnlockAndDownload = (downloadFn: () => void) => {
+     if (isCurrentTemplatePremium && !isCurrentTemplateUnlocked) {
       toast({
         title: 'Premium Template Locked',
         description: 'Please complete payment to unlock this template for download.',
@@ -80,8 +120,40 @@ export function CvPreviewPanel() {
       setIsPaymentDialogOpen(true);
       return;
     }
+    downloadFn();
+  }
+
+  const handleDownloadPdf = () => {
     window.print();
   };
+  
+  const handleDownloadImage = async (format: 'png' | 'jpeg') => {
+    if (!printRef.current) {
+        toast({ title: 'Error', description: 'Could not find CV to download.', variant: 'destructive'});
+        return;
+    };
+    setIsDownloading(true);
+    try {
+        const toBlob = format === 'png' ? htmlToImage.toPng : htmlToImage.toJpeg;
+        const dataUrl = await toBlob(printRef.current, {
+            quality: 1.0,
+            pixelRatio: 2, // Higher pixel ratio for better quality
+            style: {
+              transform: 'scale(1)', // Ensure no scaling issues
+            }
+        });
+        const link = document.createElement('a');
+        link.download = `${cvData.personalDetails.name.replace(/ /g, '_')}_CV.${format}`;
+        link.href = dataUrl;
+        link.click();
+        link.remove();
+    } catch (error) {
+        console.error('oops, something went wrong!', error);
+        toast({ title: 'Download Failed', description: 'Could not generate image. Please try again.', variant: 'destructive'})
+    } finally {
+        setIsDownloading(false);
+    }
+  }
 
   const handleAiEnhance = async () => {
     setIsAiLoading(true);
@@ -103,7 +175,7 @@ export function CvPreviewPanel() {
   };
   
   const handleTemplateChange = (value: Template) => {
-    const newTemplate = templates.find(t => t.id === value);
+    const newTemplate = allTemplates.find(t => t.id === value);
     if(newTemplate?.type === 'premium' && !isPremiumUnlocked){
         setTemplateToPurchase(newTemplate.id);
     }
@@ -216,40 +288,44 @@ export function CvPreviewPanel() {
           <CardDescription>Select a template and use tools to perfect your CV.</CardDescription>
         </CardHeader>
         <CardContent className="p-4 space-y-6">
-          <div className="space-y-3">
-            <Label className="font-semibold flex items-center gap-2"><Palette className="h-4 w-4"/>Template</Label>
-             <RadioGroup
-              value={template}
-              onValueChange={(value) => handleTemplateChange(value as Template)}
-              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2"
-            >
-              {templates.map((temp) => (
-                <div key={temp.id}>
-                  <RadioGroupItem value={temp.id} id={temp.id} className="sr-only" />
-                  <Label
-                    htmlFor={temp.id}
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 text-center h-full hover:bg-accent hover:text-accent-foreground cursor-pointer [&:has([data-state=checked])]:border-primary relative"
-                  >
-                    <span className="font-semibold text-sm mb-1">{temp.name}</span>
-                    {temp.type === 'free' ? (
-                       <span className="text-xs text-green-600 font-medium mt-2 block bg-green-100 px-2 py-0.5 rounded-full">Free</span>
-                    ) : isPremiumUnlocked && template === temp.id ? (
-                       <span className="flex items-center gap-1 text-xs text-green-600 mt-2">
-                            <CheckCircle className="h-3 w-3" /> Unlocked
-                        </span>
-                    ) : (
-                        <div className="w-full text-center mt-2" onClick={(e) => handlePurchaseClick(e, temp.id) }>
-                            <span className="text-sm text-primary font-semibold block">{temp.price} PKR</span>
-                            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
-                                <Lock className="h-3 w-3"/>
-                                <span>Unlock</span>
-                            </div>
+          <div className="space-y-4">
+              <Label className="font-semibold flex items-center gap-2 text-base"><Palette className="h-5 w-5"/>Choose Your Template</Label>
+              <RadioGroup value={template} onValueChange={(value) => handleTemplateChange(value as Template)}>
+                {templateTiers.map(tier => (
+                  <div key={tier.title} className="p-4 rounded-lg border bg-background">
+                    <h3 className="font-bold text-lg">{tier.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-3">{tier.description}</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                       {tier.templates.map((temp) => (
+                        <div key={temp.id}>
+                          <RadioGroupItem value={temp.id} id={temp.id} className="sr-only" />
+                          <Label
+                            htmlFor={temp.id}
+                            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-3 text-center h-full hover:bg-accent hover:text-accent-foreground cursor-pointer [&:has([data-state=checked])]:border-primary relative transition-all"
+                          >
+                            <span className="font-semibold text-sm mb-1">{temp.name}</span>
+                            {temp.type === 'free' ? (
+                               <span className="text-xs text-green-600 font-medium mt-2 block bg-green-100 px-2 py-0.5 rounded-full">Free</span>
+                            ) : isPremiumUnlocked && template === temp.id ? (
+                               <span className="flex items-center gap-1 text-xs text-green-600 mt-2">
+                                    <CheckCircle className="h-3 w-3" /> Unlocked
+                                </span>
+                            ) : (
+                                <div className="w-full text-center mt-2" onClick={(e) => handlePurchaseClick(e, temp.id) }>
+                                    <span className="text-sm text-primary font-semibold block">{tier.price} PKR</span>
+                                    <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
+                                        <Lock className="h-3 w-3"/>
+                                        <span>Unlock</span>
+                                    </div>
+                                </div>
+                            )}
+                          </Label>
                         </div>
-                    )}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </RadioGroup>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
@@ -319,17 +395,42 @@ export function CvPreviewPanel() {
               <Share2 className="mr-2 h-4 w-4" />
               Share via Email
             </Button>
-            <Button onClick={handleDownload} variant="outline" className="w-full">
-              <Download className="mr-2 h-4 w-4" />
-              Download as PDF
-            </Button>
+             <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full" disabled={isDownloading}>
+                  {isDownloading ? (
+                    'Downloading...'
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-4 w-4" />
+                      Download CV
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuItem onClick={() => handleUnlockAndDownload(handleDownloadPdf)}>
+                  <FileType className="mr-2 h-4 w-4" />
+                  <span>Download as PDF</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleUnlockAndDownload(() => handleDownloadImage('png'))}>
+                   <ImageIcon className="mr-2 h-4 w-4" />
+                  <span>Download as PNG</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleUnlockAndDownload(() => handleDownloadImage('jpeg'))}>
+                   <ImageIcon className="mr-2 h-4 w-4" />
+                  <span>Download as JPEG</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardContent>
       </Card>
       
       {/* This wrapper is used for printing */}
       <div className="hidden print:block cv-print-area-wrapper">
-        <div className="aspect-[210/297] cv-print-area">
+        <div ref={printRef} className="aspect-[210/297] cv-print-area">
           <CvPreview
             data={cvData}
             template={template}
@@ -343,7 +444,8 @@ export function CvPreviewPanel() {
       {/* This is for on-screen preview */}
       <div className="mt-8 rounded-lg overflow-hidden shadow-2xl shadow-primary/10 print:hidden">
         <div className="aspect-[210/297]">
-          <CvPreview
+           <CvPreview
+            ref={printRef} // Attach ref for image download
             data={cvData}
             template={template}
             accentColor={accentColor}
@@ -379,7 +481,7 @@ export function CvPreviewPanel() {
              </div>
             <DialogTitle className="text-center text-2xl">Unlock Premium Access</DialogTitle>
             <DialogDescription className="text-center">
-              Purchase the "{templates.find(t => t.id === templateToPurchase)?.name}" template for 24 hours.
+              Purchase the "{allTemplates.find(t => t.id === templateToPurchase)?.name}" template for 24 hours.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
