@@ -46,20 +46,28 @@ export type Template =
   | 'classic' 
   | 'modern' 
   | 'creative'
-  // New templates
+  // Standard templates
   | 'professional'
   | 'minimalist'
   | 'executive'
+  // Premium templates
   | 'elegant'
   | 'bold'
   | 'academic'
   | 'tech'
   | 'designer'
+  // Executive templates
   | 'corporate'
   | 'artistic'
   | 'sleek'
   | 'vintage'
   | 'premium-plus'
+  // Platinum templates
+  | 'platinum'
+  | 'luxe'
+  | 'visionary'
+  | 'prestige'
+  | 'avant-garde'
   ;
 
 export interface Payment {
@@ -77,3 +85,5 @@ export interface User {
   email: string;
   firstSeen: Date;
 }
+
+    

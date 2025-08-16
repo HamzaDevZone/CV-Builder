@@ -322,6 +322,11 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
         case 'sleek':
         case 'vintage':
         case 'premium-plus':
+        case 'platinum':
+        case 'luxe':
+        case 'visionary':
+        case 'prestige':
+        case 'avant-garde':
             return renderPlaceholder(template.charAt(0).toUpperCase() + template.slice(1));
 
         default:
@@ -336,3 +341,5 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
   );
 });
 CvPreview.displayName = 'CvPreview';
+
+    

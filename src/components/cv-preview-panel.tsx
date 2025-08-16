@@ -34,21 +34,23 @@ type TemplateTier = {
     title: string;
     description: string;
     price?: number;
+    usdPrice?: number;
     templates: { id: Template; name: string; type: 'free' | 'premium'}[];
 };
 
 const templateTiers: TemplateTier[] = [
-    { 
-        title: 'Free', 
+    {
+        title: 'Free',
         description: 'Get started with our classic, professional template.',
         templates: [
             { id: 'classic', name: 'Classic', type: 'free' },
         ]
     },
-    { 
-        title: 'Standard', 
+    {
+        title: 'Standard',
         description: 'Well-balanced templates for a variety of roles.',
         price: 400,
+        usdPrice: 1.5,
         templates: [
             { id: 'modern', name: 'Modern', type: 'premium' },
             { id: 'creative', name: 'Creative', type: 'premium' },
@@ -57,10 +59,11 @@ const templateTiers: TemplateTier[] = [
             { id: 'executive', name: 'Executive', type: 'premium' },
         ]
     },
-    { 
-        title: 'Premium', 
+    {
+        title: 'Premium',
         description: 'Elegant and bold designs to make you stand out.',
         price: 700,
+        usdPrice: 2.5,
         templates: [
             { id: 'elegant', name: 'Elegant', type: 'premium' },
             { id: 'bold', name: 'Bold', type: 'premium' },
@@ -69,10 +72,11 @@ const templateTiers: TemplateTier[] = [
             { id: 'designer', name: 'Designer', type: 'premium' },
         ]
     },
-    { 
-        title: 'Executive', 
+    {
+        title: 'Executive',
         description: 'Top-tier templates for leadership and artistic roles.',
         price: 900,
+        usdPrice: 3,
         templates: [
             { id: 'corporate', name: 'Corporate', type: 'premium' },
             { id: 'artistic', name: 'Artistic', type: 'premium' },
@@ -81,8 +85,22 @@ const templateTiers: TemplateTier[] = [
             { id: 'premium-plus', name: 'Premium Plus', type: 'premium' },
         ]
     },
+    {
+        title: 'Platinum',
+        description: 'Exclusive designs for the ultimate professional impression.',
+        price: 1500,
+        usdPrice: 5,
+        templates: [
+            { id: 'platinum', name: 'Platinum', type: 'premium' },
+            { id: 'luxe', name: 'Luxe', type: 'premium' },
+            { id: 'visionary', name: 'Visionary', type: 'premium' },
+            { id: 'prestige', name: 'Prestige', type: 'premium' },
+            { id: 'avant-garde', name: 'Avant-Garde', type: 'premium' },
+        ]
+    },
 ];
-const allTemplates = templateTiers.flatMap(tier => tier.templates.map(t => ({...t, price: tier.price})));
+
+const allTemplates = templateTiers.flatMap(tier => tier.templates.map(t => ({...t, price: tier.price, usdPrice: tier.usdPrice })));
 
 
 export function CvPreviewPanel() {
@@ -108,6 +126,7 @@ export function CvPreviewPanel() {
   const isCurrentTemplatePremium = selectedTemplateDetails?.type === 'premium';
   const isCurrentTemplateUnlocked = !isCurrentTemplatePremium || isPremiumUnlocked;
   const currentPrice = selectedTemplateDetails?.price;
+  const currentUsdPrice = selectedTemplateDetails?.usdPrice;
 
   const handleUnlockAndDownload = (downloadFn: () => void) => {
      if (isCurrentTemplatePremium && !isCurrentTemplateUnlocked) {
@@ -312,7 +331,7 @@ export function CvPreviewPanel() {
                                 </span>
                             ) : (
                                 <div className="w-full text-center mt-2" onClick={(e) => handlePurchaseClick(e, temp.id) }>
-                                    <span className="text-sm text-primary font-semibold block">{tier.price} PKR</span>
+                                    <span className="text-sm text-primary font-semibold block">{tier.price} PKR / ~${tier.usdPrice}</span>
                                     <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
                                         <Lock className="h-3 w-3"/>
                                         <span>Unlock</span>
@@ -503,7 +522,7 @@ export function CvPreviewPanel() {
             <div className="p-4 bg-muted rounded-lg text-center my-4">
                 <p className="text-sm text-muted-foreground">Total Amount</p>
                 <p className="text-3xl font-bold font-mono tracking-wider text-primary">{currentPrice || "N/A"} PKR</p>
-                {/* <p className="text-xs text-muted-foreground">~ $5 USD</p> */}
+                <p className="text-xs text-muted-foreground">~ ${currentUsdPrice || "N/A"} USD</p>
             </div>
             
             {(selectedPaymentMethod === 'easypaisa' || selectedPaymentMethod === 'bank') && (
@@ -586,3 +605,5 @@ export function CvPreviewPanel() {
     </>
   );
 }
+
+    
