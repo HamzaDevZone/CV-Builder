@@ -13,16 +13,16 @@
     --popover-foreground: 224 76% 15%;
     --primary: 223 66% 35%; /* Navy Blue */
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 96%; /* Light Gray for secondary elements */
+    --secondary: 240 6% 96%; /* F5F5F5 Light Gray */
     --secondary-foreground: 224 76% 25%;
-    --muted: 0 0% 96%;
+    --muted: 240 6% 96%;
     --muted-foreground: 224 76% 45%;
-    --accent: 0 0% 93%;
+    --accent: 240 6% 93%;
     --accent-foreground: 224 76% 15%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 90%;
-    --input: 0 0% 93%;
+    --border: 240 6% 90%;
+    --input: 240 6% 93%;
     --ring: 223 66% 35%; /* Navy Blue */
     --radius: 0.5rem;
   }
@@ -60,34 +60,43 @@
 }
 
 @media print {
-  body, html {
+  body {
     background: #fff !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
+  /* Hide everything except the print wrapper */
   body > :not(.cv-print-wrapper) {
-    display: none;
+    display: none !important;
   }
   
+  /* Ensure the print wrapper and its content are visible and take up the full space */
   .cv-print-wrapper {
     display: block !important;
     position: absolute;
     top: 0;
     left: 0;
+    width: 100%;
+    height: auto;
+    overflow: visible !important;
   }
 
   .cv-print-area {
     width: 210mm;
-    height: auto; /* Allow content to flow */
-    min-height: 297mm; /* Ensure it at least tries for A4 */
+    height: 297mm;
     margin: 0;
     padding: 0;
     box-shadow: none !important;
     border: none !important;
     transform: scale(1) !important;
-    page-break-after: always;
     overflow: visible !important;
+    page-break-after: always;
+  }
+  
+  .cv-print-area > div {
+    height: 100% !important;
+    width: 100% !important;
   }
 
   @page {

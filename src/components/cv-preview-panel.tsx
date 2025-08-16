@@ -157,8 +157,7 @@ export function CvPreviewPanel() {
   
   const { toast } = useToast();
   
-  const selectedTemplateDetails = allTemplates.find(t => t.id === template);
-  const isCurrentTemplatePremium = selectedTemplateDetails?.type === 'premium';
+  const isCurrentTemplatePremium = allTemplates.find(t => t.id === template)?.type === 'premium';
   const isCurrentTemplateUnlocked = !isCurrentTemplatePremium || isPremiumUnlocked(template);
   const currentPrice = allTemplates.find(t => t.id === templateToPurchase)?.price;
   const currentUsdPrice = allTemplates.find(t => t.id === templateToPurchase)?.usdPrice;
