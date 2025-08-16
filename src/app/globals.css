@@ -61,31 +61,33 @@
 
 @media print {
   body, html {
+    background: #fff !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  body > *:not(.fixed) {
+  body > :not(.cv-print-wrapper) {
     display: none;
   }
   
-  .fixed {
+  .cv-print-wrapper {
     display: block !important;
     position: absolute;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
   }
 
   .cv-print-area {
     width: 210mm;
-    height: 297mm;
-    margin: 0 auto;
-    box-shadow: none;
-    border: none;
-    transform: scale(1);
+    height: auto; /* Allow content to flow */
+    min-height: 297mm; /* Ensure it at least tries for A4 */
+    margin: 0;
+    padding: 0;
+    box-shadow: none !important;
+    border: none !important;
+    transform: scale(1) !important;
     page-break-after: always;
+    overflow: visible !important;
   }
 
   @page {

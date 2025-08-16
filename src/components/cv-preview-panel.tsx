@@ -82,9 +82,9 @@ const templateTiers: TemplateTier[] = [
         templates: [
             { id: 'corporate', name: 'Corporate', type: 'premium' },
             { id: 'artistic', name: 'Artistic', type: 'premium' },
-            { id: 'sleek', name: 'Sleek', type_of: 'premium' },
-            { id: 'vintage', name: 'Vintage', type_of: 'premium' },
-            { id: 'premium-plus', name: 'Premium Plus', type_of: 'premium' },
+            { id: 'sleek', name: 'Sleek', type: 'premium' },
+            { id: 'vintage', name: 'Vintage', type: 'premium' },
+            { id: 'premium-plus', name: 'Premium Plus', type: 'premium' },
         ]
     },
     {
@@ -488,7 +488,7 @@ export function CvPreviewPanel() {
       </Card>
       
       {/* This wrapper is used for printing and image generation */}
-      <div className="hidden print:block fixed top-0 left-0">
+      <div className="hidden print:block cv-print-wrapper">
         <div ref={printRef} className="cv-print-area">
           <CvPreview
             data={cvData}
