@@ -2,12 +2,11 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useCvContext, accentColors, backgroundColors, fonts } from '@/context/cv-context';
+import { useCvContext, accentColors, fonts, templateColors } from '@/context/cv-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type, Share2, CreditCard, Upload, ChevronDown, FileType, Clock } from 'lucide-react';
 import { CvPreview } from './cv-preview';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { enhanceCv, submitPayment } from '@/lib/actions';
@@ -137,7 +136,7 @@ const PendingTimer = ({ expiryTimestamp, templateId }: { expiryTimestamp: number
 
 
 export function CvPreviewPanel() {
-  const { cvData, template, setTemplate, isPremiumUnlocked, accentColor, setAccentColor, backgroundColor, setBackgroundColor, fontFamily, setFontFamily, pendingTemplate, refreshStatus } = useCvContext();
+  const { cvData, template, setTemplate, isPremiumUnlocked, accentColor, setAccentColor, fontFamily, setFontFamily, pendingTemplate, refreshStatus } = useCvContext();
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState('');
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
@@ -156,6 +155,18 @@ export function CvPreviewPanel() {
   
   const { toast } = useToast();
   
+  const { backgroundColor, setBackgroundColor } = useCvContext();
+  
+  const handleSetTemplate = (newTemplate: Template) => {
+    setTemplate(newTemplate);
+    const theme = templateColors[newTemplate];
+    if (theme) {
+      setBackgroundColor(theme.background);
+      setAccentColor(theme.accent);
+    }
+  };
+
+
   const isCurrentTemplatePremium = allTemplates.find(t => t.id === template)?.type === 'premium';
   const isCurrentTemplateUnlocked = !isCurrentTemplatePremium || isPremiumUnlocked(template);
   const currentPrice = allTemplates.find(t => t.id === templateToPurchase)?.price;
@@ -230,14 +241,14 @@ export function CvPreviewPanel() {
         setTemplateToPurchase(newTemplate.id);
         setIsPaymentDialogOpen(true);
     }
-    setTemplate(value);
+    handleSetTemplate(value);
   }
   
   const handlePurchaseClick = (e: React.MouseEvent, templateId: Template) => {
     e.preventDefault();
     e.stopPropagation();
     setTemplateToPurchase(templateId);
-    setTemplate(templateId); // Select the template for purchase
+    handleSetTemplate(templateId); // Select the template for purchase
     setIsPaymentDialogOpen(true);
   }
 
@@ -361,7 +372,12 @@ export function CvPreviewPanel() {
                                 "rounded-md border-2 p-3 text-center h-full transition-all flex flex-col items-center justify-between",
                                 isSelected ? "border-primary bg-primary/5" : "border-muted bg-popover",
                             )}>
-                               <span className="font-semibold text-sm mb-2">{temp.name}</span>
+                               <div className='flex items-center justify-center gap-2'>
+                                <span className="font-semibold text-sm">{temp.name}</span>
+                                {templateColors[temp.id]?.background && (
+                                     <div className='w-4 h-4 rounded-full border' style={{background: templateColors[temp.id].background}}></div>
+                                )}
+                               </div>
                                
                                {isPending ? (
                                     <PendingTimer expiryTimestamp={pendingTemplate!.until} templateId={temp.id} />
@@ -371,7 +387,7 @@ export function CvPreviewPanel() {
                                             <CheckCircle className="h-3 w-3" /> Selected
                                         </div>
                                     ) : (
-                                        <Button size="sm" variant="outline" className="w-full mt-2" onClick={() => setTemplate(temp.id)}>
+                                        <Button size="sm" variant="outline" className="w-full mt-2" onClick={() => handleSetTemplate(temp.id)}>
                                             Select
                                         </Button>
                                     )
@@ -396,6 +412,16 @@ export function CvPreviewPanel() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
+              <Label className="font-semibold flex items-center gap-2"><Paintbrush className="h-4 w-4"/>Background Color</Label>
+              <Input
+                type="color"
+                value={backgroundColor}
+                onChange={(e) => setBackgroundColor(e.target.value)}
+                className="p-1 h-10 w-full"
+                disabled={!!templateColors[template]}
+              />
+            </div>
+            <div className="space-y-3">
               <Label className="font-semibold flex items-center gap-2"><Palette className="h-4 w-4"/>Accent Color</Label>
               <div className="flex flex-wrap gap-3">
                 {accentColors.map((color) => (
@@ -404,18 +430,21 @@ export function CvPreviewPanel() {
                       type="button"
                       className={cn(
                         'h-8 w-8 rounded-full border-2 transition-transform hover:scale-110',
-                        color === accentColor ? 'border-primary' : 'border-transparent'
+                        color === accentColor ? 'border-primary' : 'border-transparent',
+                        templateColors[template] ? 'cursor-not-allowed opacity-50' : ''
                       )}
                       style={{ backgroundColor: color }}
                       onClick={() => setAccentColor(color)}
                       aria-label={`Set color to ${color}`}
+                      disabled={!!templateColors[template]}
                    >
                       {color === accentColor && <Check className="h-5 w-5 text-white mx-auto" />}
                    </button>
                 ))}
               </div>
             </div>
-            <div className="space-y-3">
+          </div>
+          <div className="space-y-3">
               <Label className="font-semibold flex items-center gap-2"><Type className="h-4 w-4"/>Font Family</Label>
                <Select value={fontFamily} onValueChange={setFontFamily}>
                   <SelectTrigger>
@@ -430,28 +459,7 @@ export function CvPreviewPanel() {
                   </SelectContent>
                 </Select>
             </div>
-          </div>
-          <div className="space-y-3">
-            <Label className="font-semibold flex items-center gap-2"><Paintbrush className="h-4 w-4"/>Background</Label>
-            <div className="flex flex-wrap gap-3">
-              {Object.entries(backgroundColors).map(([name, color]) => (
-                 <button
-                    key={name}
-                    type="button"
-                    className={cn(
-                      'h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 flex items-center justify-center',
-                      color === backgroundColor ? 'border-primary' : 'border-muted-foreground'
-                    )}
-                    style={{ background: color }}
-                    onClick={() => setBackgroundColor(color)}
-                    aria-label={`Set background to ${name}`}
-                 >
-                    {name === 'gradient' && <ImageIcon className="h-4 w-4 text-white/70" />}
-                    {color === backgroundColor && <Check className="h-5 w-5 text-primary-foreground mix-blend-difference mx-auto" />}
-                 </button>
-              ))}
-            </div>
-          </div>
+         
           <Separator/>
           <div className="flex flex-col sm:flex-row gap-2">
             <Button onClick={handleAiEnhance} disabled={isAiLoading} className="w-full">
@@ -509,7 +517,7 @@ export function CvPreviewPanel() {
       </div>
 
       {/* This is the on-screen preview */}
-      <div className="mt-8 rounded-lg overflow-hidden shadow-2xl shadow-primary/10 print:hidden">
+       <div className="mt-8 rounded-lg overflow-hidden shadow-2xl shadow-primary/10 print:hidden">
         <div ref={previewRef} className="aspect-[210/297] w-full">
            <CvPreview
             data={cvData}

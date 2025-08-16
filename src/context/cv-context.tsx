@@ -7,21 +7,36 @@ import { defaultCvData } from '@/lib/schemas';
 import { getPremiumStatus } from '@/lib/actions';
 
 export const accentColors = [
-  '#2563eb', // Default Blue
-  '#16a34a', // Green
-  '#ca8a04', // Amber
-  '#dc2626', // Red
-  '#8b5cf6', // Violet
+  '#1F3A93', // Navy Blue (from palette)
+  '#708090', // Slate Gray (from palette)
+  '#2E2E2E', // Charcoal Gray (from palette)
+  '#FFD700', // Gold (from palette)
+  '#013220', // Emerald Green (from palette)
+  '#C0C0C0', // Silver (from palette)
   '#db2777', // Pink
-  '#475569', // Slate
 ];
 
-export const backgroundColors = {
-  light: '#ffffff',
-  paper: '#f3f4f6',
-  dark: '#1f2937',
-  gradient: 'linear-gradient(to right, #6d28d9, #be185d)',
+// Default colors for when a template doesn't have a specific theme
+const defaultBackgroundColor = '#FFFFFF';
+const defaultAccentColor = '#1F3A93';
+
+// Pre-defined color schemes for each template
+export const templateColors: Partial<Record<Template, { background: string; accent: string }>> = {
+    'classic': { background: '#FFFFFF', accent: '#1F3A93' },
+    'modern': { background: '#FFFFF0', accent: '#708090' },
+    'creative': { background: '#E6F0FA', accent: '#2E2E2E' },
+    'professional': { background: '#F8F8FF', accent: '#FFD700' },
+    'minimalist': { background: '#F8F8FF', accent: '#1F3A93'},
+    'executive': { background: '#F5F5F5', accent: '#013220'},
+    'elegant': { background: '#FDEDED', accent: '#C0C0C0' },
+    'bold': { background: '#F5F5F5', accent: '#1A1A1A' },
+    'tech': { background: '#F5F5F5', accent: '#013220' },
+    'corporate': { background: '#F8F8FF', accent: '#1F3A93' },
+    'artistic': { background: '#FDEDED', accent: '#2C003E' },
+    'premium-plus': { background: '#F5F5F5', accent: '#1A1A1A' },
+    'luxe': { background: '#F8F8FF', accent: '#FFD700' },
 };
+
 
 export const fonts = {
     inter: { name: 'Inter', cssValue: "'Inter', sans-serif" },
@@ -65,9 +80,9 @@ const allTemplates = [
 
 export function CvProvider({ children }: { children: ReactNode }) {
   const [cvData, setCvData] = useState<CvData>(defaultCvData);
-  const [template, setTemplate] = useState<Template>('classic');
-  const [accentColor, setAccentColor] = useState<string>(accentColors[0]);
-  const [backgroundColor, setBackgroundColor] = useState<string>(backgroundColors.light);
+  const [template, _setTemplate] = useState<Template>('classic');
+  const [accentColor, setAccentColor] = useState<string>(defaultAccentColor);
+  const [backgroundColor, setBackgroundColor] = useState<string>(defaultBackgroundColor);
   const [fontFamily, setFontFamily] = useState<string>(fonts.inter.cssValue);
   
   const [premiumStatus, setPremiumStatus] = useState<Record<Template, boolean>>({} as Record<Template, boolean>);
@@ -124,8 +139,41 @@ export function CvProvider({ children }: { children: ReactNode }) {
       return premiumStatus[templateId] || false;
   }
 
+  const setTemplate = (newTemplate: Template) => {
+    _setTemplate(newTemplate);
+    const theme = templateColors[newTemplate];
+    if (theme) {
+        setBackgroundColor(theme.background);
+        setAccentColor(theme.accent);
+    } else {
+        // Revert to defaults if the new template has no theme
+        setBackgroundColor(defaultBackgroundColor);
+        setAccentColor(defaultAccentColor);
+    }
+  }
+
+  // On initial load, set the colors for the default template
+  useEffect(() => {
+    setTemplate('classic');
+  }, []);
+
+
   return (
-    <CvContext.Provider value={{ cvData, setCvData, template, setTemplate, accentColor, setAccentColor, backgroundColor, setBackgroundColor, fontFamily, setFontFamily, isPremiumUnlocked, pendingTemplate, refreshStatus }}>
+    <CvContext.Provider value={{ 
+        cvData, 
+        setCvData, 
+        template, 
+        setTemplate, 
+        accentColor, 
+        setAccentColor, 
+        backgroundColor, 
+        setBackgroundColor, 
+        fontFamily, 
+        setFontFamily, 
+        isPremiumUnlocked, 
+        pendingTemplate, 
+        refreshStatus 
+    }}>
       {children}
     </CvContext.Provider>
   );

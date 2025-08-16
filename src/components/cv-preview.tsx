@@ -6,7 +6,6 @@ import { Mail, Phone, Linkedin, Globe, MapPin, Lock, User as UserIcon, Star, Bri
 import Image from 'next/image';
 import type { CSSProperties } from 'react';
 import { cn } from '@/lib/utils';
-import { backgroundColors } from '@/context/cv-context';
 
 
 interface CvPreviewProps {
@@ -22,7 +21,18 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
   ({ data, template, accentColor, backgroundColor, fontFamily, isPremiumLocked = false }, ref) => {
   const { personalDetails, workExperience, education, skills } = data;
 
-  const isDarkBackground = [backgroundColors.dark, backgroundColors.gradient].includes(backgroundColor);
+  const isDark = (color: string) => {
+    // Basic check for dark color based on hex value, can be improved.
+    // This is a simplified check. A more robust solution would convert hex to RGB and use a luminance formula.
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance < 0.5;
+  }
+  
+  const isDarkBackground = isDark(backgroundColor);
 
   const cvStyles: CSSProperties = {
     '--accent-color': accentColor,
