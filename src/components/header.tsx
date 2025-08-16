@@ -2,8 +2,9 @@
 import { QuickCvIcon } from './icons';
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { Home, LayoutTemplate, Shield } from 'lucide-react';
+import { Home, LayoutTemplate, Settings } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 export function Header() {
   return (
@@ -14,7 +15,6 @@ export function Header() {
           <span className="font-bold text-xl tracking-tight hidden sm:inline">Quick CV Maker</span>
         </Link>
         <div className="flex items-center gap-2">
-            <ThemeToggle />
             <Link href="/">
                 <Button variant="ghost" size="sm">
                     <Home className="h-4 w-4 mr-2"/>
@@ -27,12 +27,27 @@ export function Header() {
                     Templates
                 </Button>
             </Link>
-            <Link href="/admin/login">
-                <Button variant="outline" size="sm">
-                    <Shield className="h-4 w-4 mr-2"/>
-                    Admin
+             <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className='h-9 w-9'>
+                  <Settings className="h-4 w-4" />
+                   <span className="sr-only">Settings</span>
                 </Button>
-            </Link>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Settings</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                   <Link href="/admin/login">
+                    Admin Panel
+                  </Link>
+                </DropdownMenuItem>
+                <div className="flex items-center justify-between px-2 py-1.5 text-sm">
+                  <span>Theme</span>
+                  <ThemeToggle />
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
         </div>
       </div>
     </header>
