@@ -1,3 +1,4 @@
+
 'use server';
 
 import { cvEnhancementTool, type CvEnhancementToolInput } from "@/ai/flows/cv-enhancement-tool";
@@ -81,31 +82,50 @@ export async function approvePayment(transactionId: string) {
     return { success: true };
 }
 
-export async function getPremiumStatus(data: { username: string, templateId: Template }): Promise<boolean> {
+export async function getPremiumStatus(data: { username: string, templateId: Template }): Promise<{ isUnlocked: boolean, pendingUntil?: number }> {
     const { username, templateId } = data;
+    const now = new Date().getTime();
+
+    // 1. Check for recent PENDING payments
+    const pendingPayment = payments.find(p =>
+        p.username === username &&
+        p.templateId === templateId &&
+        p.status === 'pending'
+    );
     
-    // Find all approved payments for this user and template
-    const approvedPayments = payments.filter(p => 
-        p.username === username && 
+    if(pendingPayment) {
+        const submissionTime = new Date(pendingPayment.timestamp).getTime();
+        const timeDifference = now - submissionTime;
+        const minutesDifference = timeDifference / (1000 * 60);
+
+        if (minutesDifference <= 5) {
+            // It's pending and within 5 minutes, return pending status with expiry time
+            const pendingUntil = submissionTime + (5 * 60 * 1000);
+            return { isUnlocked: false, pendingUntil };
+        }
+    }
+
+    // 2. Check for an active APPROVED payment
+    const approvedPayments = payments.filter(p =>
+        p.username === username &&
         p.templateId === templateId &&
         p.status === 'approved'
     );
 
     if (approvedPayments.length === 0) {
-        return false;
+        return { isUnlocked: false };
     }
 
-    // Check if any of the approved payments are within the last 24 hours
-    const now = new Date();
     const hasValidPayment = approvedPayments.some(payment => {
-        const approvalTime = new Date(payment.timestamp);
-        const timeDifference = now.getTime() - approvalTime.getTime();
+        const approvalTime = new Date(payment.timestamp).getTime();
+        const timeDifference = now - approvalTime;
         const hoursDifference = timeDifference / (1000 * 60 * 60);
         return hoursDifference <= 24;
     });
 
-    return hasValidPayment;
+    return { isUnlocked: hasValidPayment };
 }
+
 
 export async function adminLogin({ email, password }: {email: string, password: string}) {
     // In a real app, use a secure, hashed password comparison

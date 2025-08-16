@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
@@ -41,6 +42,8 @@ interface CvContextType {
   fontFamily: string;
   setFontFamily: (font: string) => void;
   isPremiumUnlocked: boolean;
+  pendingTemplate: { id: Template, until: number } | null;
+  refreshStatus: () => void;
 }
 
 const CvContext = createContext<CvContextType | undefined>(undefined);
@@ -52,24 +55,32 @@ export function CvProvider({ children }: { children: ReactNode }) {
   const [backgroundColor, setBackgroundColor] = useState<string>(backgroundColors.light);
   const [fontFamily, setFontFamily] = useState<string>(fonts.inter.cssValue);
   const [isPremiumUnlocked, setIsPremiumUnlocked] = useState(false);
-  
-  useEffect(() => {
-    const username = localStorage.getItem('cv-username');
+  const [pendingTemplate, setPendingTemplate] = useState<{ id: Template, until: number } | null>(null);
 
-    const checkPremium = async () => {
+  
+  const checkPremium = async () => {
+      const username = localStorage.getItem('cv-username');
       if (!template || !username) {
         setIsPremiumUnlocked(false);
+        setPendingTemplate(null);
         return;
       };
       try {
-        const status = await getPremiumStatus({ username, templateId: template });
-        setIsPremiumUnlocked(status);
+        const { isUnlocked, pendingUntil } = await getPremiumStatus({ username, templateId: template });
+        setIsPremiumUnlocked(isUnlocked);
+        if (pendingUntil && pendingUntil > Date.now()) {
+          setPendingTemplate({ id: template, until: pendingUntil });
+        } else {
+          setPendingTemplate(null);
+        }
       } catch (error) {
         console.error("Failed to check premium status:", error);
         setIsPremiumUnlocked(false);
+        setPendingTemplate(null);
       }
     };
     
+  useEffect(() => {
     checkPremium();
     
     // Periodically check for status changes, especially around template changes
@@ -78,8 +89,12 @@ export function CvProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [template]);
 
+  const refreshStatus = () => {
+      checkPremium();
+  }
+
   return (
-    <CvContext.Provider value={{ cvData, setCvData, template, setTemplate, accentColor, setAccentColor, backgroundColor, setBackgroundColor, fontFamily, setFontFamily, isPremiumUnlocked }}>
+    <CvContext.Provider value={{ cvData, setCvData, template, setTemplate, accentColor, setAccentColor, backgroundColor, setBackgroundColor, fontFamily, setFontFamily, isPremiumUnlocked, pendingTemplate, refreshStatus }}>
       {children}
     </CvContext.Provider>
   );

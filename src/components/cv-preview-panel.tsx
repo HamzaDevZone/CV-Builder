@@ -1,10 +1,11 @@
+
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useCvContext, accentColors, backgroundColors, fonts } from '@/context/cv-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type, Share2, CreditCard, Upload, ChevronDown, FileType } from 'lucide-react';
+import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type, Share2, CreditCard, Upload, ChevronDown, FileType, Clock } from 'lucide-react';
 import { CvPreview } from './cv-preview';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -102,9 +103,41 @@ const templateTiers: TemplateTier[] = [
 
 const allTemplates = templateTiers.flatMap(tier => tier.templates.map(t => ({...t, price: tier.price, usdPrice: tier.usdPrice })));
 
+const PendingTimer = ({ expiryTimestamp, templateId }: { expiryTimestamp: number, templateId: Template }) => {
+    const { refreshStatus } = useCvContext();
+    const [timeLeft, setTimeLeft] = useState(expiryTimestamp - Date.now());
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const newTimeLeft = expiryTimestamp - Date.now();
+            if (newTimeLeft <= 0) {
+                clearInterval(interval);
+                refreshStatus(); // re-check status when timer ends
+            }
+            setTimeLeft(newTimeLeft);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [expiryTimestamp, refreshStatus]);
+
+    if (timeLeft <= 0) {
+        return null; // Or some "expired" message
+    }
+    
+    const minutes = Math.floor((timeLeft / 1000) / 60);
+    const seconds = Math.floor((timeLeft / 1000) % 60);
+
+    return (
+        <div className="w-full text-center mt-2 text-xs text-amber-600 font-medium bg-amber-100 px-2 py-1 rounded-md flex items-center justify-center gap-1">
+            <Clock className="h-3 w-3"/>
+            <span>Pending... ({`${minutes}:${seconds.toString().padStart(2, '0')}`})</span>
+        </div>
+    )
+}
+
 
 export function CvPreviewPanel() {
-  const { cvData, template, setTemplate, isPremiumUnlocked, accentColor, setAccentColor, backgroundColor, setBackgroundColor, fontFamily, setFontFamily } = useCvContext();
+  const { cvData, template, setTemplate, isPremiumUnlocked, accentColor, setAccentColor, backgroundColor, setBackgroundColor, fontFamily, setFontFamily, pendingTemplate, refreshStatus } = useCvContext();
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState('');
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
@@ -125,8 +158,8 @@ export function CvPreviewPanel() {
   const selectedTemplateDetails = allTemplates.find(t => t.id === template);
   const isCurrentTemplatePremium = selectedTemplateDetails?.type === 'premium';
   const isCurrentTemplateUnlocked = !isCurrentTemplatePremium || isPremiumUnlocked;
-  const currentPrice = selectedTemplateDetails?.price;
-  const currentUsdPrice = selectedTemplateDetails?.usdPrice;
+  const currentPrice = allTemplates.find(t => t.id === templateToPurchase)?.price;
+  const currentUsdPrice = allTemplates.find(t => t.id === templateToPurchase)?.usdPrice;
 
   const handleUnlockAndDownload = (downloadFn: () => void) => {
      if (isCurrentTemplatePremium && !isCurrentTemplateUnlocked) {
@@ -249,15 +282,18 @@ export function CvPreviewPanel() {
           });
           
           setIsPaymentDialogOpen(false);
-          setTemplateToPurchase(null);
           setTrxId('');
           setReceipt(null);
 
           toast({
             title: 'Payment Submitted!',
-            description: 'Your payment is under review. An admin will approve it shortly.',
+            description: 'Your payment is under review. Please wait for approval.',
             className: 'bg-green-500 text-white',
           });
+          
+          // Manually trigger a status refresh
+          refreshStatus();
+
         } catch (error) {
           toast({
             title: 'Submission Failed',
@@ -329,14 +365,18 @@ export function CvPreviewPanel() {
                                <span className="flex items-center gap-1 text-xs text-green-600 mt-2">
                                     <CheckCircle className="h-3 w-3" /> Unlocked
                                 </span>
+                            ) : pendingTemplate && pendingTemplate.id === temp.id ? (
+                                <PendingTimer expiryTimestamp={pendingTemplate.until} templateId={temp.id} />
                             ) : (
-                                <div className="w-full text-center mt-2" onClick={(e) => handlePurchaseClick(e, temp.id) }>
-                                    <span className="text-sm text-primary font-semibold block">{tier.price} PKR / ~${tier.usdPrice}</span>
-                                    <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
-                                        <Lock className="h-3 w-3"/>
-                                        <span>Unlock</span>
+                                <Button size="sm" variant="ghost" className="w-full text-center mt-2 h-auto py-1 px-2" onClick={(e) => handlePurchaseClick(e, temp.id) }>
+                                    <div className='flex flex-col'>
+                                        <span className="text-sm text-primary font-semibold block">{tier.price} PKR / ~${tier.usdPrice}</span>
+                                        <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
+                                            <Lock className="h-3 w-3"/>
+                                            <span>Purchase</span>
+                                        </div>
                                     </div>
-                                </div>
+                                </Button>
                             )}
                           </Label>
                         </div>
@@ -605,5 +645,3 @@ export function CvPreviewPanel() {
     </>
   );
 }
-
-    
