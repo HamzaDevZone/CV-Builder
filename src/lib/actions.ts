@@ -84,6 +84,12 @@ export async function approvePayment(transactionId: string) {
 
 export async function getPremiumStatus(data: { username: string, templateId: Template }): Promise<{ isUnlocked: boolean, pendingUntil?: number }> {
     const { username, templateId } = data;
+    
+    // If there is no username, the user isn't logged in, so nothing can be unlocked.
+    if (!username) {
+        return { isUnlocked: false };
+    }
+    
     const now = new Date().getTime();
 
     // 1. Check for recent PENDING payments
