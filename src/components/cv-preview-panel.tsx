@@ -27,10 +27,23 @@ import type { Template } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { QuickCvIcon } from './icons';
 
-const templates: { id: Template; name: string; type: 'free' | 'premium' }[] = [
+const templates: { id: Template; name: string; type: 'free' | 'premium', price?: number }[] = [
     { id: 'classic', name: 'Classic', type: 'free' },
-    { id: 'modern', name: 'Modern', type: 'premium' },
-    { id: 'creative', name: 'Creative', type: 'premium' },
+    { id: 'modern', name: 'Modern', type: 'premium', price: 400 },
+    { id: 'creative', name: 'Creative', type: 'premium', price: 400 },
+    { id: 'professional', name: 'Professional', type: 'premium', price: 400 },
+    { id: 'minimalist', name: 'Minimalist', type: 'premium', price: 400 },
+    { id: 'executive', name: 'Executive', type: 'premium', price: 400 },
+    { id: 'elegant', name: 'Elegant', type: 'premium', price: 700 },
+    { id: 'bold', name: 'Bold', type: 'premium', price: 700 },
+    { id: 'academic', name: 'Academic', type: 'premium', price: 700 },
+    { id: 'tech', name: 'Tech', type: 'premium', price: 700 },
+    { id: 'designer', name: 'Designer', type: 'premium', price: 700 },
+    { id: 'corporate', name: 'Corporate', type: 'premium', price: 900 },
+    { id: 'artistic', name: 'Artistic', type: 'premium', price: 900 },
+    { id: 'sleek', name: 'Sleek', type: 'premium', price: 900 },
+    { id: 'vintage', name: 'Vintage', type: 'premium', price: 900 },
+    { id: 'premium-plus', name: 'Premium Plus', type: 'premium', price: 900 },
 ];
 
 export function CvPreviewPanel() {
@@ -50,8 +63,11 @@ export function CvPreviewPanel() {
   
   const { toast } = useToast();
   
-  const isCurrentTemplatePremium = templates.find(t => t.id === template)?.type === 'premium';
+  const selectedTemplateDetails = templates.find(t => t.id === template);
+  const isCurrentTemplatePremium = selectedTemplateDetails?.type === 'premium';
   const isCurrentTemplateUnlocked = !isCurrentTemplatePremium || isPremiumUnlocked;
+  const currentPrice = selectedTemplateDetails?.price;
+
 
   const handleDownload = () => {
     if (isCurrentTemplatePremium && !isCurrentTemplateUnlocked) {
@@ -205,25 +221,25 @@ export function CvPreviewPanel() {
              <RadioGroup
               value={template}
               onValueChange={(value) => handleTemplateChange(value as Template)}
-              className="grid grid-cols-2 lg:grid-cols-3 gap-4"
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2"
             >
               {templates.map((temp) => (
                 <div key={temp.id}>
                   <RadioGroupItem value={temp.id} id={temp.id} className="sr-only" />
                   <Label
                     htmlFor={temp.id}
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer [&:has([data-state=checked])]:border-primary relative h-full"
+                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 text-center h-full hover:bg-accent hover:text-accent-foreground cursor-pointer [&:has([data-state=checked])]:border-primary relative"
                   >
-                    {temp.name}
+                    <span className="font-semibold text-sm mb-1">{temp.name}</span>
                     {temp.type === 'free' ? (
-                       <span className="text-xs text-green-600 font-medium mt-2">Free</span>
+                       <span className="text-xs text-green-600 font-medium mt-2 block bg-green-100 px-2 py-0.5 rounded-full">Free</span>
                     ) : isPremiumUnlocked && template === temp.id ? (
                        <span className="flex items-center gap-1 text-xs text-green-600 mt-2">
                             <CheckCircle className="h-3 w-3" /> Unlocked
                         </span>
                     ) : (
                         <div className="w-full text-center mt-2" onClick={(e) => handlePurchaseClick(e, temp.id) }>
-                            <span className="text-sm text-primary font-semibold block">1500 PKR</span>
+                            <span className="text-sm text-primary font-semibold block">{temp.price} PKR</span>
                             <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
                                 <Lock className="h-3 w-3"/>
                                 <span>Unlock</span>
@@ -384,8 +400,8 @@ export function CvPreviewPanel() {
             
             <div className="p-4 bg-muted rounded-lg text-center my-4">
                 <p className="text-sm text-muted-foreground">Total Amount</p>
-                <p className="text-3xl font-bold font-mono tracking-wider text-primary">1500 PKR</p>
-                <p className="text-xs text-muted-foreground">~ $5 USD</p>
+                <p className="text-3xl font-bold font-mono tracking-wider text-primary">{currentPrice || "N/A"} PKR</p>
+                {/* <p className="text-xs text-muted-foreground">~ $5 USD</p> */}
             </div>
             
             {(selectedPaymentMethod === 'easypaisa' || selectedPaymentMethod === 'bank') && (

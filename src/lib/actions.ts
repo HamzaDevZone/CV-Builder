@@ -84,23 +84,27 @@ export async function approvePayment(transactionId: string) {
 export async function getPremiumStatus(data: { username: string, templateId: Template }): Promise<boolean> {
     const { username, templateId } = data;
     
-    const relevantPayment = payments.find(p => 
+    // Find all approved payments for this user and template
+    const approvedPayments = payments.filter(p => 
         p.username === username && 
         p.templateId === templateId &&
         p.status === 'approved'
     );
 
-    if (!relevantPayment) {
+    if (approvedPayments.length === 0) {
         return false;
     }
 
-    // Check if the payment was approved within the last 24 hours
+    // Check if any of the approved payments are within the last 24 hours
     const now = new Date();
-    const approvalTime = new Date(relevantPayment.timestamp);
-    const timeDifference = now.getTime() - approvalTime.getTime();
-    const hoursDifference = timeDifference / (1000 * 60 * 60);
+    const hasValidPayment = approvedPayments.some(payment => {
+        const approvalTime = new Date(payment.timestamp);
+        const timeDifference = now.getTime() - approvalTime.getTime();
+        const hoursDifference = timeDifference / (1000 * 60 * 60);
+        return hoursDifference <= 24;
+    });
 
-    return hoursDifference <= 24;
+    return hasValidPayment;
 }
 
 export async function adminLogin({ email, password }: {email: string, password: string}) {

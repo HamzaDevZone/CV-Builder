@@ -42,7 +42,25 @@ export interface CvData {
   skills: Skill[];
 }
 
-export type Template = 'classic' | 'modern' | 'creative';
+export type Template = 
+  | 'classic' 
+  | 'modern' 
+  | 'creative'
+  // New templates
+  | 'professional'
+  | 'minimalist'
+  | 'executive'
+  | 'elegant'
+  | 'bold'
+  | 'academic'
+  | 'tech'
+  | 'designer'
+  | 'corporate'
+  | 'artistic'
+  | 'sleek'
+  | 'vintage'
+  | 'premium-plus'
+  ;
 
 export interface Payment {
     username: string;
