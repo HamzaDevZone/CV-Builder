@@ -1,7 +1,7 @@
 
 'use client';
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from 'react';
 import { type CvData, type Template } from '@/lib/types';
 import { defaultCvData } from '@/lib/schemas';
 import { getPremiumStatus } from '@/lib/actions';
@@ -58,40 +58,68 @@ export function CvProvider({ children }: { children: ReactNode }) {
   const [pendingTemplate, setPendingTemplate] = useState<{ id: Template, until: number } | null>(null);
 
   
-  const checkPremium = async () => {
+  const checkPremium = useCallback(async () => {
       const username = localStorage.getItem('cv-username');
-      if (!template || !username) {
+      const selectedTemplate = allTemplates.find(t => t.id === template);
+      if (!selectedTemplate || !username || selectedTemplate.type === 'free') {
         setIsPremiumUnlocked(false);
         setPendingTemplate(null);
         return;
       };
+      
       try {
         const { isUnlocked, pendingUntil } = await getPremiumStatus({ username, templateId: template });
         setIsPremiumUnlocked(isUnlocked);
+
         if (pendingUntil && pendingUntil > Date.now()) {
           setPendingTemplate({ id: template, until: pendingUntil });
         } else {
           setPendingTemplate(null);
         }
+
       } catch (error) {
         console.error("Failed to check premium status:", error);
         setIsPremiumUnlocked(false);
         setPendingTemplate(null);
       }
-    };
+    }, [template]); // Dependency on template is key
     
   useEffect(() => {
     checkPremium();
-    
     // Periodically check for status changes, especially around template changes
     const interval = setInterval(checkPremium, 5000); // Check every 5 seconds
     
     return () => clearInterval(interval);
-  }, [template]);
+  }, [template, checkPremium]);
 
   const refreshStatus = () => {
       checkPremium();
   }
+
+  // Need to find all templates to check status on
+  const allTemplates = [
+      { id: 'classic', type: 'free'},
+      { id: 'modern', type: 'premium'},
+      { id: 'creative', type: 'premium'},
+      { id: 'professional', type: 'premium'},
+      { id: 'minimalist', type: 'premium'},
+      { id: 'executive', type: 'premium'},
+      { id: 'elegant', type: 'premium'},
+      { id: 'bold', type: 'premium'},
+      { id: 'academic', type: 'premium'},
+      { id: 'tech', type: 'premium'},
+      { id: 'designer', type: 'premium'},
+      { id: 'corporate', type: 'premium'},
+      { id: 'artistic', type: 'premium'},
+      { id: 'sleek', type: 'premium'},
+      { id: 'vintage', type: 'premium'},
+      { id: 'premium-plus', type: 'premium'},
+      { id: 'platinum', type: 'premium'},
+      { id: 'luxe', type: 'premium'},
+      { id: 'visionary', type: 'premium'},
+      { id: 'prestige', type: 'premium'},
+      { id: 'avant-garde', type: 'premium'}
+  ]
 
   return (
     <CvContext.Provider value={{ cvData, setCvData, template, setTemplate, accentColor, setAccentColor, backgroundColor, setBackgroundColor, fontFamily, setFontFamily, isPremiumUnlocked, pendingTemplate, refreshStatus }}>

@@ -362,7 +362,7 @@ export function CvPreviewPanel() {
                             {temp.type === 'free' ? (
                                <span className="text-xs text-green-600 font-medium mt-2 block bg-green-100 px-2 py-0.5 rounded-full">Free</span>
                             ) : isPremiumUnlocked && template === temp.id ? (
-                               <span className="flex items-center gap-1 text-xs text-green-600 mt-2">
+                               <span className="flex items-center gap-1 text-xs text-green-600 font-medium mt-2 bg-green-100 px-2 py-0.5 rounded-full">
                                     <CheckCircle className="h-3 w-3" /> Unlocked
                                 </span>
                             ) : pendingTemplate && pendingTemplate.id === temp.id ? (
