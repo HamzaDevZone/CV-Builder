@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/header';
-import { CheckCircle, Clock, Eye, Users, CreditCard } from 'lucide-react';
+import { CheckCircle, Clock, Eye, Users, CreditCard, ArrowLeft } from 'lucide-react';
 import type { Payment, User } from '@/lib/types';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -26,9 +26,12 @@ export default function AdminDashboard() {
     setIsLoading(true);
     try {
       const paymentsData = await getPayments();
-      setPayments(paymentsData);
+      // Dates are strings after serialization, so we convert them back
+      const parsedPayments = paymentsData.map(p => ({ ...p, timestamp: new Date(p.timestamp) }));
+      setPayments(parsedPayments);
       const usersData = await getUsers();
-      setUsers(usersData);
+       const parsedUsers = usersData.map(u => ({ ...u, firstSeen: new Date(u.firstSeen) }));
+      setUsers(parsedUsers);
     } catch (error) {
       toast({
         title: 'Error',
@@ -72,7 +75,13 @@ export default function AdminDashboard() {
     <div className="flex flex-col min-h-screen bg-secondary/30">
         <Header />
         <main className="flex-1 container max-w-7xl mx-auto p-4 md:p-8">
-            <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+            <div className="flex items-center justify-between mb-6">
+                <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+                 <Button variant="outline" onClick={() => router.back()}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                </Button>
+            </div>
             <Tabs defaultValue="payments" className="w-full">
               <TabsList className="grid w-full grid-cols-2 max-w-sm">
                 <TabsTrigger value="payments"><CreditCard className="mr-2 h-4 w-4"/>Payments</TabsTrigger>

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { adminLogin } from '@/lib/actions';
 import { QuickCvIcon } from '@/components/icons';
+import { ArrowLeft } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -42,7 +43,11 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4 relative">
+       <Button variant="outline" onClick={() => router.back()} className="absolute top-4 left-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to App
+        </Button>
       <Card className="w-full max-w-sm shadow-2xl">
         <form onSubmit={handleLogin}>
           <CardHeader className="text-center">
