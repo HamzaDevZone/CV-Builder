@@ -496,7 +496,7 @@ export function CvPreviewPanel() {
         </CardContent>
       </Card>
       
-      {/* This wrapper is used for printing and image generation */}
+      {/* This wrapper is used ONLY for printing and image generation */}
       <div className="hidden print:block cv-print-wrapper">
         <div ref={printRef} className="cv-print-area">
           <CvPreview
@@ -509,8 +509,7 @@ export function CvPreviewPanel() {
         </div>
       </div>
 
-
-      {/* This is for on-screen preview */}
+      {/* This is the on-screen preview */}
       <div className="mt-8 rounded-lg overflow-hidden shadow-2xl shadow-primary/10 print:hidden">
         <div ref={previewRef} className="aspect-[210/297] w-full">
            <CvPreview
