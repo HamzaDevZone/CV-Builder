@@ -345,5 +345,3 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
   );
 });
 CvPreview.displayName = 'CvPreview';
-
-    
