@@ -31,7 +31,7 @@ function LandingPage() {
             <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
               Choose from a variety of professionally designed templates, fill in your details, and download your perfect CV. It's that simple.
             </p>
-            <div className="mt-8 flex justify-center gap-4">
+            <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
               <Button asChild size="lg">
                 <Link href="/templates">
                   Get Started for Free <ArrowRight className="ml-2 h-5 w-5" />
