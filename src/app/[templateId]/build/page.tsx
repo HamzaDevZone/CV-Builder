@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { CvForm } from '@/components/cv-form';
@@ -32,7 +33,7 @@ function BuildContent({ templateId }: { templateId: Template }) {
     }, [templateId, setTemplate, isPremiumUnlocked, router]);
 
     return (
-        <div className="flex flex-col h-screen bg-background">
+        <div className="flex flex-col h-screen bg-secondary/30">
             <Header />
             <main className="flex-1 overflow-y-auto">
                 <div className="w-full max-w-screen-2xl mx-auto p-4 md:p-6 lg:p-8">
