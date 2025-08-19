@@ -1,4 +1,4 @@
-import { getPayments, getUsers } from '@/lib/actions';
+import { getPayments, getUsers, getAds } from '@/lib/actions';
 import { Header } from '@/components/header';
 import { AdminDashboardClient } from './_components/admin-dashboard-client';
 import { Suspense } from 'react';
@@ -22,8 +22,9 @@ export default async function AdminDashboardPage() {
 async function DashboardDataLoader(){
     const initialPayments = await getPayments();
     const initialUsers = await getUsers();
+    const initialAds = await getAds();
 
-    return <AdminDashboardClient initialPayments={initialPayments} initialUsers={initialUsers} />
+    return <AdminDashboardClient initialPayments={initialPayments} initialUsers={initialUsers} initialAds={initialAds} />
 }
 
 function DashboardSkeleton() {

@@ -2,18 +2,21 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
-import { Footer } from '@/components/footer';
+import { AdDisplay } from '@/components/ad-display';
+import { getAds } from '@/lib/actions';
 
 export const metadata: Metadata = {
   title: 'Quick CV Maker',
   description: 'Build professional CVs and resumes with ease. Choose from free and premium templates.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const ads = await getAds();
+  
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -29,6 +32,7 @@ export default function RootLayout({
             disableTransitionOnChange
         >
             <div className="flex flex-col min-h-screen">
+              <AdDisplay initialAds={ads} />
               <div className="flex-grow">
                 {children}
               </div>

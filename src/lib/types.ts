@@ -86,4 +86,10 @@ export interface User {
   firstSeen: Date;
 }
 
-    
+export interface Ad {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl: string;
+  createdAt: Date;
+}

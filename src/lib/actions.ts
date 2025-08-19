@@ -2,7 +2,7 @@
 'use server';
 
 import { cvEnhancementTool, type CvEnhancementToolInput } from "@/ai/flows/cv-enhancement-tool";
-import type { Payment, Template, User } from './types';
+import type { Payment, Template, User, Ad } from './types';
 import { unstable_cache as cache, revalidateTag } from 'next/cache';
 
 // Mock database - This is a simple in-memory store.
@@ -12,6 +12,11 @@ if (!global.payments) {
   global.payments = [];
 }
 const payments: Payment[] = global.payments;
+
+if (!global.ads) {
+  global.ads = [];
+}
+const ads: Ad[] = global.ads;
 
 
 export async function enhanceCv(input: CvEnhancementToolInput): Promise<string> {
@@ -159,4 +164,39 @@ export async function adminLogin({ email, password }: {email: string, password: 
     // In a real app, use a secure, hashed password comparison
     const isAdmin = email === "rajahuzaifa015166@gmail.com" && password === "Huzaifa112233";
     return { success: isAdmin };
+}
+
+// --- Ad Management Actions ---
+
+export const getAds = cache(
+    async (): Promise<Ad[]> => {
+        return [...ads].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    },
+    ['ads'],
+    {
+        tags: ['ads'],
+    }
+);
+
+export async function createAd(data: { title: string; content: string; imageUrl: string; }) {
+    const newAd: Ad = {
+        id: crypto.randomUUID(),
+        title: data.title,
+        content: data.content,
+        imageUrl: data.imageUrl,
+        createdAt: new Date(),
+    };
+    ads.unshift(newAd); // Add to the beginning of the array
+    revalidateTag('ads');
+    return { success: true, ad: newAd };
+}
+
+export async function deleteAd(adId: string) {
+    const index = ads.findIndex(ad => ad.id === adId);
+    if (index > -1) {
+        ads.splice(index, 1);
+        revalidateTag('ads');
+        return { success: true };
+    }
+    return { success: false, message: 'Ad not found' };
 }
