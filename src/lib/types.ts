@@ -1,3 +1,4 @@
+
 export interface PersonalDetails {
   photo?: string;
   name: string;
@@ -88,8 +89,9 @@ export interface User {
 
 export interface Ad {
   id: string;
-  title: string;
-  content: string;
+  brandName: string;
+  offer: string;
+  linkUrl: string;
   imageUrl: string;
   createdAt: Date;
 }

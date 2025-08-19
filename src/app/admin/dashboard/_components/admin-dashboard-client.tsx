@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, Clock, Eye, Users, CreditCard, ArrowLeft, Trash2, PlusCircle, Megaphone, Image as ImageIcon } from 'lucide-react';
+import { CheckCircle, Clock, Eye, Users, CreditCard, ArrowLeft, Trash2, PlusCircle, Megaphone, Image as ImageIcon, Link2 } from 'lucide-react';
 import type { Payment, User, Ad } from '@/lib/types';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -28,12 +28,13 @@ function AdManagement({ initialAds }: { initialAds: Ad[] }) {
     setIsSubmitting(true);
     const formData = new FormData(event.currentTarget);
     const data = {
-      title: formData.get('title') as string,
-      content: formData.get('content') as string,
+      brandName: formData.get('brandName') as string,
+      offer: formData.get('offer') as string,
+      linkUrl: formData.get('linkUrl') as string,
       imageUrl: formData.get('imageUrl') as string,
     };
 
-    if (!data.title || !data.content || !data.imageUrl) {
+    if (!data.brandName || !data.offer || !data.linkUrl || !data.imageUrl) {
         toast({ title: 'Error', description: 'Please fill all fields.', variant: 'destructive'});
         setIsSubmitting(false);
         return;
@@ -71,21 +72,25 @@ function AdManagement({ initialAds }: { initialAds: Ad[] }) {
         <Card>
           <CardHeader>
             <CardTitle>Create New Ad</CardTitle>
-            <CardDescription>Post a new ad that will be displayed in the app.</CardDescription>
+            <CardDescription>Post a new ad for a brand, store, or restaurant.</CardDescription>
           </CardHeader>
           <form onSubmit={handleCreateAd}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <label htmlFor="title">Ad Title</label>
-                <Input id="title" name="title" placeholder="e.g., Special Offer!" required />
+                <label htmlFor="brandName">Brand Name</label>
+                <Input id="brandName" name="brandName" placeholder="e.g., Nike, Pizza Hut" required />
               </div>
               <div className="space-y-2">
-                <label htmlFor="content">Ad Content</label>
-                <Textarea id="content" name="content" placeholder="Describe the ad..." required />
+                <label htmlFor="offer">Offer / Slogan</label>
+                <Textarea id="offer" name="offer" placeholder="e.g., 50% off on all items!" required />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="linkUrl">Link to Store</label>
+                <Input id="linkUrl" name="linkUrl" type="url" placeholder="https://store-link.com" required />
               </div>
               <div className="space-y-2">
                 <label htmlFor="imageUrl">Image URL</label>
-                <Input id="imageUrl" name="imageUrl" placeholder="https://placehold.co/300x100.png" defaultValue="https://placehold.co/300x100.png" required />
+                <Input id="imageUrl" name="imageUrl" type="url" placeholder="https://placehold.co/300x100.png" defaultValue="https://placehold.co/300x100.png" required />
                  <p className="text-xs text-muted-foreground">Use a service like <a href="https://placehold.co" target="_blank" className="underline">placehold.co</a> for placeholder images.</p>
               </div>
             </CardContent>
@@ -102,7 +107,7 @@ function AdManagement({ initialAds }: { initialAds: Ad[] }) {
          <Card>
             <CardHeader>
                 <CardTitle>Current Ads</CardTitle>
-                <CardDescription>List of all active ads.</CardDescription>
+                <CardDescription>List of all active brand promotions.</CardDescription>
             </CardHeader>
             <CardContent>
                  <div className="border rounded-lg">
@@ -110,9 +115,9 @@ function AdManagement({ initialAds }: { initialAds: Ad[] }) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Image</TableHead>
-                                <TableHead>Title</TableHead>
-                                <TableHead>Content</TableHead>
-                                <TableHead>Created At</TableHead>
+                                <TableHead>Brand Name</TableHead>
+                                <TableHead>Offer</TableHead>
+                                <TableHead>Link</TableHead>
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -127,11 +132,18 @@ function AdManagement({ initialAds }: { initialAds: Ad[] }) {
                            ads.map((ad) => (
                             <TableRow key={ad.id}>
                                 <TableCell>
-                                    <Image src={ad.imageUrl} alt={ad.title} width={100} height={50} className="rounded-md object-cover" data-ai-hint="advertisement banner" />
+                                    <Image src={ad.imageUrl} alt={ad.brandName} width={100} height={50} className="rounded-md object-cover" data-ai-hint="advertisement banner" />
                                 </TableCell>
-                                <TableCell className="font-medium">{ad.title}</TableCell>
-                                <TableCell className="text-muted-foreground text-xs max-w-xs truncate">{ad.content}</TableCell>
-                                <TableCell>{new Date(ad.createdAt).toLocaleString()}</TableCell>
+                                <TableCell className="font-medium">{ad.brandName}</TableCell>
+                                <TableCell className="text-muted-foreground text-xs max-w-xs truncate">{ad.offer}</TableCell>
+                                <TableCell>
+                                  <Button asChild variant="outline" size="sm">
+                                    <a href={ad.linkUrl} target="_blank" rel="noopener noreferrer">
+                                      <Link2 className="mr-2 h-3 w-3" />
+                                      Visit
+                                    </a>
+                                  </Button>
+                                </TableCell>
                                 <TableCell className="text-right">
                                     <Button size="icon" variant="destructive" onClick={() => handleDeleteAd(ad.id)} disabled={isDeleting === ad.id}>
                                         <Trash2 className="h-4 w-4" />
@@ -180,7 +192,8 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
       router.push('/admin/login');
       return;
     }
-  }, [router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   // Refresh data periodically
   useEffect(() => {

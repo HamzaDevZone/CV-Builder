@@ -178,11 +178,12 @@ export const getAds = cache(
     }
 );
 
-export async function createAd(data: { title: string; content: string; imageUrl: string; }) {
+export async function createAd(data: { brandName: string; offer: string; linkUrl: string; imageUrl: string; }) {
     const newAd: Ad = {
         id: crypto.randomUUID(),
-        title: data.title,
-        content: data.content,
+        brandName: data.brandName,
+        offer: data.offer,
+        linkUrl: data.linkUrl,
         imageUrl: data.imageUrl,
         createdAt: new Date(),
     };

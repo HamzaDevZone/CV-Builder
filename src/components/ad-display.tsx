@@ -1,10 +1,12 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import type { Ad } from '@/lib/types';
 import Image from 'next/image';
-import { Megaphone, X } from 'lucide-react';
+import { Megaphone, X, ArrowRight } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import Link from 'next/link';
 
 const AD_ROTATION_INTERVAL = 1000 * 60 * 20; // 20 minutes
 
@@ -57,12 +59,12 @@ export function AdDisplay({ initialAds }: { initialAds: Ad[] }) {
             transition={{ duration: 0.5, ease: 'easeInOut' }}
             className="bg-primary/10 text-primary"
         >
-          <div className="container mx-auto px-4 py-2">
-            <div className="flex items-center justify-between gap-4">
+          <div className="container mx-auto px-4">
+            <a href={currentAd.linkUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between gap-4 group py-2">
                 <div className="flex items-center gap-4">
                     <Image
                         src={currentAd.imageUrl}
-                        alt={currentAd.title}
+                        alt={currentAd.brandName}
                         width={120}
                         height={40}
                         className="rounded-md object-cover hidden sm:block"
@@ -70,18 +72,22 @@ export function AdDisplay({ initialAds }: { initialAds: Ad[] }) {
                     />
                     <Megaphone className="h-6 w-6 flex-shrink-0 sm:hidden" />
                     <div className="text-sm">
-                        <p className="font-bold">{currentAd.title}</p>
-                        <p className="text-primary/80 hidden md:block">{currentAd.content}</p>
+                        <p className="font-bold">{currentAd.brandName} <span className="ml-2 inline-flex items-center gap-1 text-xs opacity-70 group-hover:opacity-100 transition-opacity">Visit Store <ArrowRight className="h-3 w-3"/></span></p>
+                        <p className="text-primary/80 hidden md:block">{currentAd.offer}</p>
                     </div>
                 </div>
                 <button
-                    onClick={() => setIsVisible(false)}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsVisible(false);
+                    }}
                     className="p-1 rounded-full hover:bg-primary/20 transition-colors"
                     aria-label="Close ad"
                 >
                     <X className="h-4 w-4" />
                 </button>
-            </div>
+            </a>
           </div>
         </motion.div>
       )}
