@@ -17,10 +17,8 @@ interface BuildContentProps {
     templateId: Template;
 }
 
-
+// This part is a client component because it uses hooks
 function BuildContentInternal({ templateId }: BuildContentProps) {
-    'use client';
-    
     const { setTemplate, isPremiumUnlocked } = useCvContext();
     const router = useRouter();
 
@@ -52,7 +50,7 @@ function BuildContentInternal({ templateId }: BuildContentProps) {
     );
 }
 
-
+// This wrapper is the Client Component Boundary
 function BuildContent({ templateId }: BuildContentProps) {
   'use client';
 
