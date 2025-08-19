@@ -99,22 +99,26 @@ export function CvProvider({ children }: { children: ReactNode }) {
     let hasPending = false;
     const newStatus: Record<Template, boolean> = {} as any;
 
-    for (const t of allTemplates) {
-        if (t.type === 'premium') {
-            try {
-                const { isUnlocked, pendingUntil } = await getPremiumStatus({ username, templateId: t.id });
-                newStatus[t.id] = isUnlocked;
-
-                if (pendingUntil && pendingUntil > Date.now()) {
-                    setPendingTemplate({ id: t.id, until: pendingUntil });
-                    hasPending = true;
-                }
-            } catch (error) {
+    const premiumTemplates = allTemplates.filter(t => t.type === 'premium');
+    
+    // Using Promise.all to fetch statuses concurrently for better performance
+    const statuses = await Promise.all(premiumTemplates.map(t => 
+        getPremiumStatus({ username, templateId: t.id })
+            .catch(error => {
                 console.error(`Failed to check premium status for ${t.id}:`, error);
-                newStatus[t.id] = false;
-            }
+                return { isUnlocked: false, pendingUntil: undefined }; // Return a default object on error
+            })
+    ));
+
+    premiumTemplates.forEach((t, index) => {
+        const { isUnlocked, pendingUntil } = statuses[index];
+        newStatus[t.id] = isUnlocked;
+
+        if (pendingUntil && pendingUntil > Date.now()) {
+            setPendingTemplate({ id: t.id, until: pendingUntil });
+            hasPending = true;
         }
-    }
+    });
 
     setPremiumStatus(newStatus);
     if (!hasPending) {
@@ -124,7 +128,7 @@ export function CvProvider({ children }: { children: ReactNode }) {
     
   useEffect(() => {
     checkAllPremiumStatuses();
-    const interval = setInterval(checkAllPremiumStatuses, 5000); // Check every 5 seconds
+    const interval = setInterval(checkAllPremiumStatuses, 10000); // Check every 10 seconds to reduce load
     
     return () => clearInterval(interval);
   }, [checkAllPremiumStatuses]);
