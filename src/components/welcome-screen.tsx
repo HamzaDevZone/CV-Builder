@@ -18,6 +18,8 @@ export function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
     e.preventDefault();
     if (username.trim()) {
       onGetStarted(username.trim());
+      // Force a redirect to the home page to ensure the app state is re-evaluated.
+      window.location.href = '/';
     }
   };
 

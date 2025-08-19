@@ -133,14 +133,21 @@ export default function HomePageWrapper() {
   const [username, setUsername] = useState('');
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem('cv-username');
-    const timer = setTimeout(() => {
-      if (storedUsername) {
-        setUsername(storedUsername);
+    // This check is important to prevent the app from showing the welcome screen
+    // when it's just been reloaded after a username was set.
+    if (typeof window !== 'undefined' && localStorage.getItem('cv-username')) {
         setAppState('ready');
-      } else {
-        setAppState('welcome');
-      }
+        return;
+    }
+
+    const timer = setTimeout(() => {
+        const storedUsername = localStorage.getItem('cv-username');
+        if (storedUsername) {
+            setUsername(storedUsername);
+            setAppState('ready');
+        } else {
+            setAppState('welcome');
+        }
     }, 1500); // Shorter splash screen
     return () => clearTimeout(timer);
   }, []);
