@@ -40,8 +40,6 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
     '--secondary-foreground-cv': isDarkBackground ? '#d1d5db' : '#4b5563',
     '--muted-foreground-cv': isDarkBackground ? '#9ca3af' : '#6b7281',
     fontFamily: fontFamily,
-    backgroundColor: backgroundColor,
-    color: isDarkBackground ? '#ffffff' : '#111827',
   };
   
   const cvClasses = cn(
@@ -56,7 +54,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
   );
   
   const renderPlaceholder = (templateName: string) => (
-    <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col items-center justify-center text-center relative")}>
+    <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col items-center justify-center text-center relative bg-[--background-cv]")}>
         {renderPremiumWatermark()}
         <h2 className="text-2xl font-bold" style={{color: 'var(--accent-color)'}}>{templateName} Template</h2>
         <p className="text-[--secondary-foreground-cv]">This is a placeholder for the {templateName} template.</p>
@@ -68,7 +66,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
     switch (template) {
         case 'professional':
            return (
-             <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col min-h-full relative")}>
+             <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col min-h-full relative bg-[--background-cv] text-[--foreground-cv]")}>
               {renderPremiumWatermark()}
               
               <header className="relative text-center mb-8">
@@ -154,7 +152,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
         
         case 'minimalist':
             return (
-                <div style={cvStyles} className={cn(cvClasses, "p-10 flex flex-col min-h-full relative")}>
+                <div style={cvStyles} className={cn(cvClasses, "p-10 flex flex-col min-h-full relative bg-[--background-cv] text-[--foreground-cv]")}>
                     {renderPremiumWatermark()}
                     
                     <header className="mb-10 text-center">
@@ -220,7 +218,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
 
         case 'creative':
            return (
-            <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col min-h-full relative")}>
+            <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col min-h-full relative bg-[--background-cv] text-[--foreground-cv]")}>
               {renderPremiumWatermark()}
               
               <header className="flex items-center gap-6">
@@ -314,7 +312,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
           };
           
           return (
-            <div style={{...cvStyles, ...sidebarStyles}} className={cn("flex min-h-full relative")}>
+            <div style={{...cvStyles, ...sidebarStyles}} className={cn("flex min-h-full relative bg-[--background-cv] text-[--foreground-cv]")}>
                {renderPremiumWatermark()}
     
               {/* Left Sidebar */}
@@ -355,7 +353,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
               </div>
     
               {/* Right Column */}
-              <div className="w-[65%] p-8 space-y-8" style={{backgroundColor: 'var(--background-cv)', color: 'var(--foreground-cv)'}}>
+              <div className="w-[65%] p-8 space-y-8">
                 <div>
                   <h2 className="text-2xl font-bold uppercase tracking-wider flex items-center gap-3" style={{color: 'var(--accent-color)'}}><UserIcon/>Profile</h2>
                   <p className="mt-3 text-sm leading-relaxed text-[--secondary-foreground-cv]">{personalDetails.summary || 'A brief professional summary...'}</p>
@@ -398,7 +396,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
         // Classic Template (Default)
         case 'classic':
              return (
-              <div style={cvStyles} className={cn(cvClasses, "p-4 md:p-8")}>
+              <div style={cvStyles} className={cn(cvClasses, "p-4 md:p-8 bg-[--background-cv] text-[--foreground-cv]")}>
                  <header className="text-center md:text-left md:flex items-center gap-6 border-b pb-4" style={{borderColor: 'var(--accent-color)'}}>
                   <div className="w-24 h-24 rounded-full bg-muted overflow-hidden border-2 border-border flex-shrink-0 mx-auto md:mx-0">
                      {personalDetails.photo ? (
@@ -490,7 +488,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
 
   return (
     <div ref={ref} className="bg-card shadow-lg h-full w-full overflow-y-auto">
-      <div style={cvStyles} className={cn(cvClasses, 'relative')}>
+      <div style={cvStyles} className={cn(cvClasses, 'relative bg-[--background-cv] text-[--foreground-cv]')}>
         {renderContent()}
       </div>
     </div>
