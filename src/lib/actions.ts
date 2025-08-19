@@ -28,7 +28,15 @@ export async function submitPayment(data: { username: string; transactionId: str
     console.log("Submitting payment for user:", data.username, "for template", data.templateId, "with email", data.userEmail);
     // Avoid duplicate pending payments based on transactionId
     const existingPayment = payments.find(p => p.transactionId === data.transactionId);
-    if (!existingPayment) {
+    if (existingPayment) {
+        // If a payment with this ID already exists, just update its details
+        existingPayment.username = data.username;
+        existingPayment.userEmail = data.userEmail;
+        existingPayment.templateId = data.templateId;
+        existingPayment.receiptDataUrl = data.receiptDataUrl;
+        existingPayment.status = 'pending';
+        existingPayment.timestamp = new Date();
+    } else {
        payments.push({ ...data, status: 'pending', timestamp: new Date() });
     }
     // Revalidate the cache for payments and users
@@ -114,7 +122,18 @@ export async function getPremiumStatus(data: { username: string, templateId: Tem
     const allUserPayments = payments.filter(p => p.username === username);
     const now = new Date().getTime();
 
-    // 1. Check for recent PENDING payments for the specific template
+    // 1. Check for an active APPROVED payment for the specific template
+    const approvedPayment = allUserPayments.find(p =>
+        p.templateId === templateId &&
+        p.status === 'approved' &&
+        (now - new Date(p.timestamp).getTime()) / (1000 * 60 * 60) <= 24 // Check if within 24 hours
+    );
+
+    if (approvedPayment) {
+        return { isUnlocked: true };
+    }
+
+    // 2. If not approved, check for a recent PENDING payment for that template
     const pendingPayment = allUserPayments.find(p =>
         p.templateId === templateId &&
         p.status === 'pending'
@@ -125,31 +144,15 @@ export async function getPremiumStatus(data: { username: string, templateId: Tem
         const timeDifference = now - submissionTime;
         const minutesDifference = timeDifference / (1000 * 60);
 
+        // If payment is pending and submitted within the last 5 minutes
         if (minutesDifference <= 5) {
-            // It's pending and within 5 minutes, return pending status with expiry time
-            const pendingUntil = submissionTime + (5 * 60 * 1000);
+            const pendingUntil = submissionTime + (5 * 60 * 1000); // 5 minutes from submission time
             return { isUnlocked: false, pendingUntil };
         }
     }
-
-    // 2. Check for an active APPROVED payment for the specific template
-    const approvedPayments = allUserPayments.filter(p =>
-        p.templateId === templateId &&
-        p.status === 'approved'
-    );
-
-    if (approvedPayments.length === 0) {
-        return { isUnlocked: false };
-    }
-
-    const hasValidPayment = approvedPayments.some(payment => {
-        const approvalTime = new Date(payment.timestamp).getTime();
-        const timeDifference = now - approvalTime;
-        const hoursDifference = timeDifference / (1000 * 60 * 60);
-        return hoursDifference <= 24;
-    });
-
-    return { isUnlocked: hasValidPayment };
+    
+    // 3. If no approved or recent pending payment is found
+    return { isUnlocked: false };
 }
 
 

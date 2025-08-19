@@ -129,7 +129,7 @@ export function TemplateSelection() {
         if (!trxId || !templateToPurchase) {
           toast({
             title: 'Missing Information',
-            description: 'Please provide a transaction ID and select a template.',
+            description: 'Please provide a transaction ID.',
             variant: 'destructive',
           });
           return;
@@ -216,7 +216,7 @@ export function TemplateSelection() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                    {tier.templates.map((temp) => {
                       const isUnlocked = temp.type === 'free' || isPremiumUnlocked(temp.id);
-                      const isPending = pendingTemplate?.id === temp.id;
+                      const isPending = pendingTemplate?.id === temp.id && pendingTemplate.until > Date.now();
 
                       return (
                         <div 
@@ -235,7 +235,7 @@ export function TemplateSelection() {
                                 {isPending ? (
                                     <div className="w-full text-center mt-2 text-xs text-amber-600 font-medium bg-amber-100 px-2 py-1 rounded-md flex items-center justify-center gap-1">
                                         <Clock className="h-3 w-3"/>
-                                        <span>Pending...</span>
+                                        <span>Pending Review</span>
                                         <PendingTimer expiryTimestamp={pendingTemplate!.until} />
                                     </div>
                                ) : isUnlocked ? (
