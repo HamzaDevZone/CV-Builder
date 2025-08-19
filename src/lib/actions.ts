@@ -3,6 +3,7 @@
 
 import { cvEnhancementTool, type CvEnhancementToolInput } from "@/ai/flows/cv-enhancement-tool";
 import type { Payment, Template, User } from './types';
+import { unstable_cache as cache, revalidateTag } from 'next/cache';
 
 // Mock database - This is a simple in-memory store.
 // In a real production app, you would use a persistent database like Firestore.
@@ -30,42 +31,59 @@ export async function submitPayment(data: { username: string; transactionId: str
     if (!existingPayment) {
        payments.push({ ...data, status: 'pending', timestamp: new Date() });
     }
+    // Revalidate the cache for payments and users
+    revalidateTag('payments');
+    revalidateTag('users');
     console.log("Current payments count:", payments.length);
     return { success: true };
 }
 
-export async function getPayments(): Promise<Payment[]> {
-    // In a real app, you'd fetch this from a database
-    // Return a deep copy to avoid mutation and ensure serializability
-    const sortedPayments = [...payments].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    return JSON.parse(JSON.stringify(sortedPayments));
-}
+export const getPayments = cache(
+    async (): Promise<Payment[]> => {
+        // In a real app, you'd fetch this from a database
+        // Return a deep copy to avoid mutation and ensure serializability
+        const sortedPayments = [...payments].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        return JSON.parse(JSON.stringify(sortedPayments));
+    },
+    ['payments'], // Cache key
+    {
+        tags: ['payments'], // Cache tag for revalidation
+    }
+);
 
-export async function getUsers(): Promise<User[]> {
-    const userMap = new Map<string, User>();
-    // Get the earliest payment for each user to determine "first seen"
-    for (const payment of payments) {
-        if (!userMap.has(payment.username)) {
-            userMap.set(payment.username, {
-                username: payment.username,
-                email: payment.userEmail,
-                firstSeen: payment.timestamp,
-            });
-        } else {
-            const existingUser = userMap.get(payment.username)!;
-            if (new Date(payment.timestamp) < new Date(existingUser.firstSeen)) {
-                existingUser.firstSeen = payment.timestamp;
-                // Also update email if it was missing before
-                if (!existingUser.email || existingUser.email === 'not-provided') {
-                    existingUser.email = payment.userEmail;
+
+export const getUsers = cache(
+    async (): Promise<User[]> => {
+        const userMap = new Map<string, User>();
+        // Get the earliest payment for each user to determine "first seen"
+        for (const payment of payments) {
+            if (!userMap.has(payment.username)) {
+                userMap.set(payment.username, {
+                    username: payment.username,
+                    email: payment.userEmail,
+                    firstSeen: payment.timestamp,
+                });
+            } else {
+                const existingUser = userMap.get(payment.username)!;
+                if (new Date(payment.timestamp) < new Date(existingUser.firstSeen)) {
+                    existingUser.firstSeen = payment.timestamp;
+                    // Also update email if it was missing before
+                    if (!existingUser.email || existingUser.email === 'not-provided') {
+                        existingUser.email = payment.userEmail;
+                    }
                 }
             }
         }
+        const users = Array.from(userMap.values());
+        users.sort((a,b) => new Date(b.firstSeen).getTime() - new Date(a.firstSeen).getTime());
+        return JSON.parse(JSON.stringify(users));
+    },
+    ['users'],
+    {
+        tags: ['users']
     }
-    const users = Array.from(userMap.values());
-    users.sort((a,b) => new Date(b.firstSeen).getTime() - new Date(a.firstSeen).getTime());
-    return JSON.parse(JSON.stringify(users));
-}
+);
+
 
 export async function approvePayment(transactionId: string) {
     console.log("Approving payment for transaction:", transactionId);
@@ -79,6 +97,9 @@ export async function approvePayment(transactionId: string) {
         console.error("Payment not found for approval:", transactionId);
         throw new Error("Payment not found");
     }
+     // Revalidate the cache for payments and users
+    revalidateTag('payments');
+    revalidateTag('users');
     return { success: true };
 }
 
@@ -90,11 +111,11 @@ export async function getPremiumStatus(data: { username: string, templateId: Tem
         return { isUnlocked: false };
     }
     
+    const allUserPayments = payments.filter(p => p.username === username);
     const now = new Date().getTime();
 
-    // 1. Check for recent PENDING payments
-    const pendingPayment = payments.find(p =>
-        p.username === username &&
+    // 1. Check for recent PENDING payments for the specific template
+    const pendingPayment = allUserPayments.find(p =>
         p.templateId === templateId &&
         p.status === 'pending'
     );
@@ -111,9 +132,8 @@ export async function getPremiumStatus(data: { username: string, templateId: Tem
         }
     }
 
-    // 2. Check for an active APPROVED payment
-    const approvedPayments = payments.filter(p =>
-        p.username === username &&
+    // 2. Check for an active APPROVED payment for the specific template
+    const approvedPayments = allUserPayments.filter(p =>
         p.templateId === templateId &&
         p.status === 'approved'
     );

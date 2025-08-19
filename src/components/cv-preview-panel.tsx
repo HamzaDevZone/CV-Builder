@@ -1,15 +1,15 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useCvContext, accentColors, fonts, templateColors } from '@/context/cv-context';
+import { useState, useRef } from 'react';
+import { useCvContext } from '@/context/cv-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Sparkles, Lock, FileText, Palette, CheckCircle, Check, Paintbrush, Image as ImageIcon, Type, Share2, CreditCard, Upload, ChevronDown, FileType, Clock } from 'lucide-react';
+import { Download, Sparkles, FileText, Palette, Check, Paintbrush, Image as ImageIcon, Type, Share2, FileType } from 'lucide-react';
 import { CvPreview } from './cv-preview';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { enhanceCv, submitPayment } from '@/lib/actions';
+import { enhanceCv } from '@/lib/actions';
 import {
   Dialog,
   DialogContent,
@@ -23,163 +23,37 @@ import { Textarea } from './ui/textarea';
 import { serializeCvData } from '@/lib/utils';
 import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
-import type { Template } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { QuickCvIcon } from './icons';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 import * as htmlToImage from 'html-to-image';
-
-
-type TemplateTier = {
-    title: string;
-    description: string;
-    price?: number;
-    usdPrice?: number;
-    templates: { id: Template; name: string; type: 'free' | 'premium'}[];
-};
-
-const templateTiers: TemplateTier[] = [
-    {
-        title: 'Free',
-        description: 'Get started with our classic, professional template.',
-        templates: [
-            { id: 'classic', name: 'Classic', type: 'free' },
-        ]
-    },
-    {
-        title: 'Standard',
-        description: 'Well-balanced templates for a variety of roles.',
-        price: 400,
-        usdPrice: 1.5,
-        templates: [
-            { id: 'modern', name: 'Modern', type: 'premium' },
-            { id: 'creative', name: 'Creative', type: 'premium' },
-            { id: 'professional', name: 'Professional', type: 'premium' },
-            { id: 'minimalist', name: 'Minimalist', type: 'premium' },
-            { id: 'executive', name: 'Executive', type: 'premium' },
-        ]
-    },
-    {
-        title: 'Premium',
-        description: 'Elegant and bold designs to make you stand out.',
-        price: 700,
-        usdPrice: 2.5,
-        templates: [
-            { id: 'elegant', name: 'Elegant', type: 'premium' },
-            { id: 'bold', name: 'Bold', type: 'premium' },
-            { id: 'academic', name: 'Academic', type: 'premium' },
-            { id: 'tech', name: 'Tech', type: 'premium' },
-            { id: 'designer', name: 'Designer', type: 'premium' },
-        ]
-    },
-    {
-        title: 'Executive',
-        description: 'Top-tier templates for leadership and artistic roles.',
-        price: 900,
-        usdPrice: 3,
-        templates: [
-            { id: 'corporate', name: 'Corporate', type: 'premium' },
-            { id: 'artistic', name: 'Artistic', type: 'premium' },
-            { id: 'sleek', name: 'Sleek', type: 'premium' },
-            { id: 'vintage', name: 'Vintage', type: 'premium' },
-            { id: 'premium-plus', name: 'Premium Plus', type: 'premium' },
-        ]
-    },
-    {
-        title: 'Platinum',
-        description: 'Exclusive designs for the ultimate professional impression.',
-        price: 1500,
-        usdPrice: 5,
-        templates: [
-            { id: 'platinum', name: 'Platinum', type: 'premium' },
-            { id: 'luxe', name: 'Luxe', type: 'premium' },
-            { id: 'visionary', name: 'Visionary', type: 'premium' },
-            { id: 'prestige', name: 'Prestige', type: 'premium' },
-            { id: 'avant-garde', name: 'Avant-Garde', type: 'premium' },
-        ]
-    },
-];
-
-const allTemplates = templateTiers.flatMap(tier => tier.templates.map(t => ({...t, price: tier.price, usdPrice: tier.usdPrice })));
-
-const PendingTimer = ({ expiryTimestamp, templateId }: { expiryTimestamp: number, templateId: Template }) => {
-    const { refreshStatus } = useCvContext();
-    const [timeLeft, setTimeLeft] = useState(expiryTimestamp - Date.now());
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const newTimeLeft = expiryTimestamp - Date.now();
-            if (newTimeLeft <= 0) {
-                clearInterval(interval);
-                refreshStatus(); // re-check status when timer ends
-            }
-            setTimeLeft(newTimeLeft);
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, [expiryTimestamp, refreshStatus]);
-
-    if (timeLeft <= 0) {
-        return null; // Or some "expired" message
-    }
-    
-    const minutes = Math.floor((timeLeft / 1000) / 60);
-    const seconds = Math.floor((timeLeft / 1000) % 60);
-
-    return (
-        <div className="w-full text-center mt-2 text-xs text-amber-600 font-medium bg-amber-100 px-2 py-1 rounded-md flex items-center justify-center gap-1">
-            <Clock className="h-3 w-3"/>
-            <span>Pending... ({`${minutes}:${seconds.toString().padStart(2, '0')}`})</span>
-        </div>
-    )
-}
+import { accentColors, fonts, templateColors } from '@/context/cv-context';
 
 
 export function CvPreviewPanel() {
-  const { cvData, template, setTemplate, isPremiumUnlocked, accentColor, setAccentColor, fontFamily, setFontFamily, pendingTemplate, refreshStatus } = useCvContext();
+  const { cvData, template, isPremiumUnlocked, accentColor, setAccentColor, fontFamily, setFontFamily } = useCvContext();
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState('');
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
-  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [shareEmail, setShareEmail] = useState('');
   const [shareMessage, setShareMessage] = useState('');
-  const [templateToPurchase, setTemplateToPurchase] = useState<Template | null>(null);
-  const [trxId, setTrxId] = useState('');
-  const [receipt, setReceipt] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('easypaisa');
   const printRef = useRef<HTMLDivElement>(null);
   
   const { toast } = useToast();
   
   const { backgroundColor, setBackgroundColor } = useCvContext();
-  
-  const handleSetTemplate = (newTemplate: Template) => {
-    setTemplate(newTemplate);
-    const theme = templateColors[newTemplate];
-    if (theme) {
-      setBackgroundColor(theme.background);
-      setAccentColor(theme.accent);
-    }
-  };
 
-
-  const isCurrentTemplatePremium = allTemplates.find(t => t.id === template)?.type === 'premium';
+  const isCurrentTemplatePremium = template !== 'classic';
   const isCurrentTemplateUnlocked = !isCurrentTemplatePremium || isPremiumUnlocked(template);
-  const currentPrice = allTemplates.find(t => t.id === templateToPurchase)?.price;
-  const currentUsdPrice = allTemplates.find(t => t.id === templateToPurchase)?.usdPrice;
-
+  
   const handleUnlockAndDownload = (downloadFn: () => void) => {
      if (isCurrentTemplatePremium && !isCurrentTemplateUnlocked) {
       toast({
         title: 'Premium Template Locked',
-        description: 'Please complete payment to unlock this template for download.',
+        description: 'Please go to the main page to purchase this template before downloading.',
         variant: 'destructive',
       });
-      setTemplateToPurchase(template);
-      setIsPaymentDialogOpen(true);
       return;
     }
     downloadFn();
@@ -259,91 +133,6 @@ export function CvPreviewPanel() {
       setIsAiLoading(false);
     }
   };
-  
-  const handleTemplateSelect = (value: Template) => {
-    const newTemplate = allTemplates.find(t => t.id === value);
-    if(newTemplate?.type === 'premium' && !isPremiumUnlocked(value)){
-        setTemplateToPurchase(newTemplate.id);
-        setIsPaymentDialogOpen(true);
-    }
-    handleSetTemplate(value);
-  }
-  
-  const handlePurchaseClick = (e: React.MouseEvent, templateId: Template) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setTemplateToPurchase(templateId);
-    handleSetTemplate(templateId); // Select the template for purchase
-    setIsPaymentDialogOpen(true);
-  }
-
-  const handlePaymentSubmit = async () => {
-    if (!trxId || !templateToPurchase) {
-      toast({
-        title: 'Missing Information',
-        description: 'Please provide a transaction ID and select a template.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    if (!receipt) {
-       toast({
-        title: 'Missing Receipt',
-        description: 'Please upload a payment receipt screenshot.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    const username = localStorage.getItem('cv-username');
-    if(!username) {
-        toast({ title: 'Error', description: 'Username not found. Please refresh.', variant: 'destructive' });
-        return;
-    }
-
-    setIsSubmitting(true);
-
-    const reader = new FileReader();
-    reader.readAsDataURL(receipt);
-    reader.onloadend = async () => {
-        const receiptDataUrl = reader.result as string;
-        try {
-          await submitPayment({ 
-            username: username,
-            transactionId: trxId, 
-            userEmail: cvData.personalDetails.email || "not-provided",
-            templateId: templateToPurchase,
-            receiptDataUrl: receiptDataUrl,
-          });
-          
-          setIsPaymentDialogOpen(false);
-          setTrxId('');
-          setReceipt(null);
-
-          toast({
-            title: 'Payment Submitted!',
-            description: 'Your payment is under review. Please wait for approval.',
-            className: 'bg-green-500 text-white',
-          });
-          
-          // Manually trigger a status refresh
-          refreshStatus();
-
-        } catch (error) {
-          toast({
-            title: 'Submission Failed',
-            description: 'Could not submit payment details. Please try again.',
-            variant: 'destructive',
-          });
-        } finally {
-          setIsSubmitting(false);
-        }
-    };
-    reader.onerror = () => {
-        toast({ title: "Error", description: "Failed to read file.", variant: "destructive"});
-        setIsSubmitting(false);
-    }
-  }
 
   const handleShare = () => {
     const subject = `CV from ${cvData.personalDetails.name || 'a candidate'}`;
@@ -353,88 +142,17 @@ export function CvPreviewPanel() {
     setIsShareDialogOpen(false);
   }
 
-  const handleReceiptUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setReceipt(file);
-    }
-  };
-  
-  const paymentMethods = [
-    { id: 'easypaisa', name: 'Easypaisa', icon: <QuickCvIcon className="h-6 w-6"/> },
-    { id: 'bank', name: 'Bank Account', icon: <CreditCard className="h-6 w-6"/> },
-    { id: 'paypal', name: 'PayPal', icon: <p className="font-bold text-lg">P</p> },
-    { id: 'stripe', name: 'Stripe', icon: <CreditCard className="h-6 w-6"/> },
-  ];
-
   return (
     <>
-      <Card className="overflow-hidden shadow-lg border-none" id="templates">
+      <Card className="overflow-hidden shadow-lg border-none" id="tools">
         <CardHeader className="bg-muted/30 p-4 border-b">
           <CardTitle className="text-xl flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            CV Preview & Tools
+            CV Tools
           </CardTitle>
-          <CardDescription>Select a template and use tools to perfect your CV.</CardDescription>
+          <CardDescription>Use these tools to perfect and share your CV.</CardDescription>
         </CardHeader>
         <CardContent className="p-4 space-y-6">
-          <div className="space-y-4">
-              <Label className="font-semibold flex items-center gap-2 text-base"><Palette className="h-5 w-5"/>Choose Your Template</Label>
-              <div className="space-y-4">
-                {templateTiers.map(tier => (
-                  <div key={tier.title} className="p-4 rounded-lg border bg-background">
-                    <h3 className="font-bold text-lg">{tier.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-3">{tier.description}</p>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-                       {tier.templates.map((temp) => {
-                          const isSelected = template === temp.id;
-                          const isUnlocked = temp.type === 'free' || isPremiumUnlocked(temp.id);
-                          const isPending = pendingTemplate?.id === temp.id;
-
-                          return (
-                            <div key={temp.id} 
-                                className={cn(
-                                "rounded-md border-2 p-3 text-center h-full transition-all flex flex-col items-center justify-between",
-                                isSelected ? "border-primary bg-primary/5" : "border-muted bg-popover",
-                            )}>
-                               <div className='flex items-center justify-center gap-2'>
-                                <span className="font-semibold text-sm">{temp.name}</span>
-                                {templateColors[temp.id]?.background && (
-                                     <div className='w-4 h-4 rounded-full border' style={{background: templateColors[temp.id].background}}></div>
-                                )}
-                               </div>
-                               
-                               {isPending ? (
-                                    <PendingTimer expiryTimestamp={pendingTemplate!.until} templateId={temp.id} />
-                               ) : isUnlocked ? (
-                                    isSelected ? (
-                                        <div className="flex items-center gap-1 text-xs text-green-600 font-medium mt-2 bg-green-100 px-2 py-0.5 rounded-full">
-                                            <CheckCircle className="h-3 w-3" /> Selected
-                                        </div>
-                                    ) : (
-                                        <Button size="sm" variant="outline" className="w-full mt-2" onClick={() => handleSetTemplate(temp.id)}>
-                                            Select
-                                        </Button>
-                                    )
-                               ) : (
-                                    <Button size="sm" variant="ghost" className="w-full text-center mt-2 h-auto py-1 px-2" onClick={(e) => handlePurchaseClick(e, temp.id) }>
-                                        <div className='flex flex-col'>
-                                            <span className="text-sm text-primary font-semibold block">{tier.price} PKR / ~${tier.usdPrice}</span>
-                                            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
-                                                <Lock className="h-3 w-3"/>
-                                                <span>Purchase</span>
-                                            </div>
-                                        </div>
-                                    </Button>
-                               )}
-                            </div>
-                          )
-                       })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
               <Label className="font-semibold flex items-center gap-2"><Paintbrush className="h-4 w-4"/>Background Color</Label>
@@ -504,7 +222,6 @@ export function CvPreviewPanel() {
                     <>
                       <Download className="mr-2 h-4 w-4" />
                       Download CV
-                      <ChevronDown className="ml-2 h-4 w-4" />
                     </>
                   )}
                 </Button>
@@ -528,7 +245,8 @@ export function CvPreviewPanel() {
         </CardContent>
       </Card>
       
-      <div className="cv-print-wrapper hidden print:block">
+      {/* This wrapper is only for printing */}
+      <div className="hidden print:block cv-print-wrapper">
         <div ref={printRef} className="cv-print-area">
           <CvPreview
             data={cvData}
@@ -541,6 +259,7 @@ export function CvPreviewPanel() {
         </div>
       </div>
       
+       {/* This is the on-screen preview */}
       <div className="mt-8 rounded-lg overflow-hidden shadow-2xl shadow-primary/10 print:hidden">
         <div className="aspect-[210/297] w-full">
            <CvPreview
@@ -567,89 +286,6 @@ export function CvPreviewPanel() {
           </div>
           <DialogFooter>
             <Button onClick={() => setIsFeedbackDialogOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-             <div className="mx-auto w-fit mb-4 p-3 bg-primary/10 rounded-full">
-                <QuickCvIcon className="h-10 w-10 text-primary" />
-             </div>
-            <DialogTitle className="text-center text-2xl">Unlock Premium Access</DialogTitle>
-            <DialogDescription className="text-center">
-              Purchase the "{allTemplates.find(t => t.id === templateToPurchase)?.name}" template for 24 hours.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <div className="grid grid-cols-2 gap-2 mb-4">
-                {paymentMethods.map(method => (
-                    <Button 
-                        key={method.id} 
-                        variant={selectedPaymentMethod === method.id ? 'default' : 'outline'}
-                        onClick={() => setSelectedPaymentMethod(method.id)}
-                        className="flex items-center justify-start gap-2 p-2 h-auto"
-                        disabled={!['easypaisa', 'bank'].includes(method.id)} // Only enable bank/easypaisa for this demo
-                    >
-                       {method.icon}
-                        <span className="text-sm">{method.name}</span>
-                    </Button>
-                ))}
-            </div>
-            
-            <div className="p-4 bg-muted rounded-lg text-center my-4">
-                <p className="text-sm text-muted-foreground">Total Amount</p>
-                <p className="text-3xl font-bold font-mono tracking-wider text-primary">{currentPrice || "N/A"} PKR</p>
-                <p className="text-xs text-muted-foreground">~ ${currentUsdPrice || "N/A"} USD</p>
-            </div>
-            
-            {(selectedPaymentMethod === 'easypaisa' || selectedPaymentMethod === 'bank') && (
-                <div className="space-y-4 text-center">
-                    <p className="text-sm text-muted-foreground">
-                        Please transfer to the account below and submit your Transaction ID and receipt for verification.
-                    </p>
-                    {selectedPaymentMethod === 'easypaisa' && (
-                        <div className="p-3 bg-background rounded-lg border">
-                            <p className="text-xs text-muted-foreground">EasyPaisa Account</p>
-                            <p className="text-lg font-bold font-mono tracking-wider">03465496360</p>
-                        </div>
-                    )}
-                    {selectedPaymentMethod === 'bank' && (
-                         <div className="p-3 bg-background rounded-lg border text-left text-sm">
-                            <p><span className="font-semibold">Account Title:</span> Raja Huzaifa</p>
-                            <p><span className="font-semibold">Account Number:</span> 03465496360</p>
-                            <p><span className="font-semibold">Bank Name:</span> Sadapay</p>
-                        </div>
-                    )}
-                    <div className='space-y-2 text-left'>
-                        <Label htmlFor="trxId">Transaction ID</Label>
-                        <Input id="trxId" placeholder="e.g., 1234567890" value={trxId} onChange={e => setTrxId(e.target.value)} />
-                    </div>
-                     <div className='space-y-2 text-left'>
-                        <Label htmlFor="receipt">Payment Receipt</Label>
-                         <Button asChild variant="outline" className="w-full">
-                            <label htmlFor="receipt-upload" className="cursor-pointer">
-                            <Upload className="mr-2 h-4 w-4" />
-                            {receipt ? `Selected: ${receipt.name}` : 'Upload Screenshot'}
-                            <input id="receipt-upload" type="file" className="sr-only" accept="image/*" onChange={handleReceiptUpload} />
-                            </label>
-                        </Button>
-                    </div>
-                </div>
-            )}
-            {!['easypaisa', 'bank'].includes(selectedPaymentMethod) && (
-                <div className="text-center text-sm text-muted-foreground p-4 bg-muted rounded-lg">
-                    <p>This payment method is for demonstration only.</p>
-                    <p>Please select "Easypaisa" or "Bank Account" to continue.</p>
-                </div>
-            )}
-          </div>
-          <DialogFooter className="flex-col gap-2">
-            <Button onClick={handlePaymentSubmit} disabled={isSubmitting || !['easypaisa', 'bank'].includes(selectedPaymentMethod)}>
-              {isSubmitting ? 'Submitting...' : 'Submit for Verification'}
-            </Button>
-            <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)} disabled={isSubmitting}>Cancel</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
