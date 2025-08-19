@@ -23,7 +23,6 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
 
   const isDark = (color: string) => {
     // Basic check for dark color based on hex value, can be improved.
-    // This is a simplified check. A more robust solution would convert hex to RGB and use a luminance formula.
     const hex = color.replace('#', '');
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
@@ -48,17 +47,16 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
     'w-full h-full transform origin-top-left',
   );
 
-  const renderPremiumLock = () => isPremiumLocked && (
-     <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-4">
-        <Lock className="h-16 w-16 text-primary/50" style={{ color: 'var(--accent-color)', opacity: 0.5 }} />
-        <p className="mt-4 text-2xl font-bold text-primary/70" style={{ color: 'var(--accent-color)', opacity: 0.7 }}>Premium Template</p>
-        <p className="text-muted-foreground">Complete payment to unlock and remove this watermark.</p>
+  const renderPremiumWatermark = () => isPremiumLocked && (
+     <div className="premium-watermark absolute bottom-4 right-4 z-10 flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 text-xs font-semibold text-white shadow-lg backdrop-blur-sm print:hidden">
+        <Lock className="h-3 w-3" />
+        <span>Premium Template</span>
     </div>
   );
   
   const renderPlaceholder = (templateName: string) => (
     <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col items-center justify-center text-center relative")}>
-        {renderPremiumLock()}
+        {renderPremiumWatermark()}
         <h2 className="text-2xl font-bold" style={{color: 'var(--accent-color)'}}>{templateName} Template</h2>
         <p className="text-[--secondary-foreground-cv]">This is a placeholder for the {templateName} template.</p>
         <p className="text-sm text-[--muted-foreground-cv] mt-4">The content will be rendered here once the template is designed.</p>
@@ -67,10 +65,162 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
 
   const renderContent = () => {
     switch (template) {
+        case 'professional':
+           return (
+             <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col min-h-full relative")}>
+              {renderPremiumWatermark()}
+              
+              <header className="relative text-center mb-8">
+                  <div className="absolute top-0 left-0 w-full h-24 bg-[--accent-color]"></div>
+                  <div className="relative inline-block">
+                    <div className="w-36 h-36 rounded-full bg-background-cv p-2 mt-8 shadow-lg">
+                      {personalDetails.photo ? (
+                        <Image src={personalDetails.photo} alt={personalDetails.name} width={136} height={136} className="w-full h-full object-cover rounded-full" />
+                      ) : (
+                        <div className="w-full h-full bg-muted rounded-full flex items-center justify-center">
+                          <UserIcon className="w-20 h-20 text-muted-foreground/50"/>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+              </header>
+
+              <div className="text-center mb-8">
+                  <h1 className="text-4xl font-bold text-[--foreground-cv]">{personalDetails.name || 'Your Name'}</h1>
+                  <p className="text-xl text-[--accent-color] font-semibold mt-1">{personalDetails.jobTitle || 'Professional Title'}</p>
+              </div>
+
+               <div className="grid grid-cols-12 gap-8">
+                  {/* Left Column */}
+                  <div className="col-span-4 space-y-6">
+                      <div>
+                          <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] pb-1 border-b-2 border-[--accent-color] mb-3">About Me</h2>
+                          <p className="text-sm leading-relaxed text-[--secondary-foreground-cv]">{personalDetails.summary || 'A brief professional summary...'}</p>
+                      </div>
+                      <div>
+                          <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] pb-1 border-b-2 border-[--accent-color] mb-3">Contact</h2>
+                          <div className="space-y-2 text-sm text-[--secondary-foreground-cv]">
+                              {personalDetails.email && <p className="flex items-center gap-2 break-all"><Mail className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.email}</span></p>}
+                              {personalDetails.phone && <p className="flex items-center gap-2 break-all"><Phone className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.phone}</span></p>}
+                              {personalDetails.address && <p className="flex items-center gap-2 break-all"><MapPin className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.address}</span></p>}
+                              {personalDetails.linkedin && <p className="flex items-center gap-2 break-all"><Linkedin className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.linkedin}</span></p>}
+                              {personalDetails.website && <p className="flex items-center gap-2 break-all"><Globe className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.website}</span></p>}
+                          </div>
+                      </div>
+                  </div>
+                  {/* Right Column */}
+                  <div className="col-span-8 space-y-6">
+                       <div>
+                          <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] pb-1 border-b-2 border-[--accent-color] mb-4">Skills</h2>
+                          <ul className="flex flex-wrap gap-2">
+                              {skills.map(skill => skill.name && <li key={skill.id} className="bg-[--accent-color] text-white text-xs font-medium px-3 py-1 rounded-full">{skill.name}</li>)}
+                          </ul>
+                      </div>
+                      <div>
+                          <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] pb-1 border-b-2 border-[--accent-color] mb-4">Experience</h2>
+                          <div className="space-y-4">
+                              {workExperience.map(exp => exp.jobTitle && (
+                                  <div key={exp.id}>
+                                      <div className="flex justify-between items-baseline">
+                                          <h3 className="text-md font-semibold text-[--foreground-cv]">{exp.jobTitle}</h3>
+                                          <p className="text-xs font-medium text-[--muted-foreground-cv]">{exp.startDate} - {exp.endDate}</p>
+                                      </div>
+                                      <p className="text-sm font-medium text-[--secondary-foreground-cv]">{exp.company} | {exp.location}</p>
+                                      <p className="mt-1 text-sm whitespace-pre-wrap text-[--secondary-foreground-cv]">{exp.description}</p>
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
+                      <div>
+                          <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] pb-1 border-b-2 border-[--accent-color] mb-4">Education</h2>
+                          <div className="space-y-4">
+                              {education.map(edu => edu.degree && (
+                                  <div key={edu.id}>
+                                      <div className="flex justify-between items-baseline">
+                                          <h3 className="text-md font-semibold text-[--foreground-cv]">{edu.degree}</h3>
+                                          <p className="text-xs font-medium text-[--muted-foreground-cv]">{edu.startDate} - {edu.endDate}</p>
+                                      </div>
+                                      <p className="text-sm font-medium text-[--secondary-foreground-cv]">{edu.institution} | {edu.location}</p>
+                                      <p className="mt-1 text-sm whitespace-pre-wrap text-[--secondary-foreground-cv]">{edu.description}</p>
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
+                  </div>
+              </div>
+            </div>
+           );
+        
+        case 'minimalist':
+            return (
+                <div style={cvStyles} className={cn(cvClasses, "p-10 flex flex-col min-h-full relative")}>
+                    {renderPremiumWatermark()}
+                    
+                    <header className="mb-10 text-center">
+                        <h1 className="text-5xl font-extrabold tracking-tight text-[--foreground-cv]">{personalDetails.name || 'YOUR NAME'}</h1>
+                        <p className="text-lg text-[--accent-color] font-medium tracking-widest mt-2">{personalDetails.jobTitle || 'PROFESSIONAL TITLE'}</p>
+                    </header>
+                    
+                    <div className="flex justify-center items-center gap-x-6 gap-y-2 flex-wrap text-sm text-[--muted-foreground-cv] border-y-2 border-[--accent-color] py-3 mb-10">
+                        {personalDetails.email && <p className="flex items-center gap-2"><Mail size={14}/>{personalDetails.email}</p>}
+                        {personalDetails.phone && <p className="flex items-center gap-2"><Phone size={14}/>{personalDetails.phone}</p>}
+                        {personalDetails.address && <p className="flex items-center gap-2"><MapPin size={14}/>{personalDetails.address}</p>}
+                        {personalDetails.linkedin && <p className="flex items-center gap-2"><Linkedin size={14}/>{personalDetails.linkedin}</p>}
+                        {personalDetails.website && <p className="flex items-center gap-2"><Globe size={14}/>{personalDetails.website}</p>}
+                    </div>
+
+                    <div className="space-y-8">
+                        <div>
+                            <h2 className="text-sm font-bold uppercase tracking-widest text-[--accent-color] mb-3">Profile</h2>
+                            <p className="text-sm leading-relaxed text-[--secondary-foreground-cv]">{personalDetails.summary || 'A brief professional summary...'}</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                            <div className="space-y-8">
+                                <div>
+                                    <h2 className="text-sm font-bold uppercase tracking-widest text-[--accent-color] mb-4">Experience</h2>
+                                    <div className="space-y-5">
+                                        {workExperience.map(exp => exp.jobTitle && (
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-[--foreground-cv]">{exp.jobTitle}</h3>
+                                                <p className="text-md font-medium text-[--secondary-foreground-cv]">{exp.company}</p>
+                                                <p className="text-xs text-[--muted-foreground-cv] mb-1">{exp.startDate} - {exp.endDate} | {exp.location}</p>
+                                                <p className="text-sm whitespace-pre-wrap text-[--secondary-foreground-cv]">{exp.description}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h2 className="text-sm font-bold uppercase tracking-widest text-[--accent-color] mb-4">Education</h2>
+                                    <div className="space-y-5">
+                                        {education.map(edu => edu.degree && (
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-[--foreground-cv]">{edu.degree}</h3>
+                                                <p className="text-md font-medium text-[--secondary-foreground-cv]">{edu.institution}</p>
+                                                <p className="text-xs text-[--muted-foreground-cv]">{edu.startDate} - {edu.endDate} | {edu.location}</p>
+                                                <p className="mt-1 text-sm whitespace-pre-wrap text-[--secondary-foreground-cv]">{edu.description}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-bold uppercase tracking-widest text-[--accent-color] mb-4">Skills</h2>
+                                <ul className="space-y-2">
+                                    {skills.map(skill => skill.name && (
+                                        <li className="text-sm font-medium">{skill.name}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
         case 'creative':
            return (
             <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col min-h-full relative")}>
-              {renderPremiumLock()}
+              {renderPremiumWatermark()}
               
               <header className="flex items-center gap-6">
                  <div className="w-32 h-32 rounded-full bg-secondary overflow-hidden border-4 shadow-lg flex-shrink-0" style={{ borderColor: 'var(--accent-color)'}}>
@@ -171,7 +321,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
           
           return (
             <div style={{...cvStyles, ...sidebarStyles, ...contentStyles}} className={cn("flex min-h-full relative")}>
-               {renderPremiumLock()}
+               {renderPremiumWatermark()}
     
               {/* Left Sidebar */}
               <div className="w-[35%] flex-shrink-0 bg-[--sidebar-bg] text-[--sidebar-fg] p-8 space-y-8">
@@ -321,8 +471,6 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
             );
         
         // Placeholders for new templates
-        case 'professional':
-        case 'minimalist':
         case 'executive':
         case 'elegant':
         case 'bold':
@@ -348,7 +496,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
 
   return (
     <div ref={ref} className="bg-card shadow-lg h-full w-full overflow-y-auto">
-      <div className={cvClasses}>
+      <div className={cn(cvClasses, 'relative')}>
         {renderContent()}
       </div>
     </div>

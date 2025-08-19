@@ -151,7 +151,6 @@ export function CvPreviewPanel() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('easypaisa');
   const printRef = useRef<HTMLDivElement>(null);
-  const previewRef = useRef<HTMLDivElement>(null);
   
   const { toast } = useToast();
   
@@ -187,7 +186,22 @@ export function CvPreviewPanel() {
   }
 
   const handleDownloadPdf = () => {
+    // Temporarily remove the watermark for printing if the template is unlocked
+    const node = printRef.current;
+    if (!node) return;
+
+    const watermark = node.querySelector('.premium-watermark') as HTMLElement | null;
+    
+    if (isCurrentTemplateUnlocked && watermark) {
+      watermark.style.display = 'none';
+    }
+    
     window.print();
+    
+    // Restore watermark after printing
+    if (isCurrentTemplateUnlocked && watermark) {
+       watermark.style.display = 'flex';
+    }
   };
   
   const handleDownloadImage = async (format: 'png' | 'jpeg') => {
@@ -196,6 +210,13 @@ export function CvPreviewPanel() {
         toast({ title: 'Error', description: 'Could not find CV to download.', variant: 'destructive'});
         return;
     };
+   
+    // Temporarily remove the watermark for image generation if the template is unlocked
+    const watermark = node.querySelector('.premium-watermark') as HTMLElement | null;
+    if (isCurrentTemplateUnlocked && watermark) {
+      watermark.style.display = 'none';
+    }
+
     setIsDownloading(true);
     try {
         const toFn = format === 'png' ? htmlToImage.toPng : htmlToImage.toJpeg;
@@ -213,6 +234,10 @@ export function CvPreviewPanel() {
         toast({ title: 'Download Failed', description: 'Could not generate image. Please try again.', variant: 'destructive'})
     } finally {
         setIsDownloading(false);
+         // Restore watermark after generation
+        if (isCurrentTemplateUnlocked && watermark) {
+            watermark.style.display = 'flex';
+        }
     }
   }
 
@@ -503,8 +528,7 @@ export function CvPreviewPanel() {
         </CardContent>
       </Card>
       
-      {/* This wrapper is used ONLY for printing and image generation */}
-      <div className="hidden print:block cv-print-wrapper">
+      <div className="cv-print-wrapper hidden print:block">
         <div ref={printRef} className="cv-print-area">
           <CvPreview
             data={cvData}
@@ -512,13 +536,13 @@ export function CvPreviewPanel() {
             accentColor={accentColor}
             backgroundColor={backgroundColor}
             fontFamily={fontFamily}
+            isPremiumLocked={!isCurrentTemplateUnlocked}
           />
         </div>
       </div>
-
-      {/* This is the on-screen preview */}
-       <div className="mt-8 rounded-lg overflow-hidden shadow-2xl shadow-primary/10 print:hidden">
-        <div ref={previewRef} className="aspect-[210/297] w-full">
+      
+      <div className="mt-8 rounded-lg overflow-hidden shadow-2xl shadow-primary/10 print:hidden">
+        <div className="aspect-[210/297] w-full">
            <CvPreview
             data={cvData}
             template={template}
