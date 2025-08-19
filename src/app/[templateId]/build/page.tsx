@@ -26,9 +26,7 @@ function BuildContent({ templateId }: BuildContentProps) {
     useEffect(() => {
         const isUnlocked = templateId === 'classic' || isPremiumUnlocked(templateId);
         if (!isUnlocked) {
-            // Maybe show a toast? For now, redirect to home.
-            // This prevents direct URL access to a locked template's build page.
-            router.push('/');
+            router.push('/templates');
             return;
         }
         setTemplate(templateId);
@@ -53,7 +51,7 @@ function BuildContent({ templateId }: BuildContentProps) {
     );
 }
 
-// This is the main page component, now a Server Component
+// This is the main page component, which is a Server Component
 export default function BuilderPage({ params }: BuilderPageProps) {
   const { templateId } = params;
 
