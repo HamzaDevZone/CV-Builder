@@ -1,4 +1,3 @@
-
 import { CvForm } from '@/components/cv-form';
 import { CvPreviewPanel } from '@/components/cv-preview-panel';
 import { Header } from '@/components/header';
@@ -17,7 +16,8 @@ interface BuildContentProps {
     templateId: Template;
 }
 
-// This part is a client component because it uses hooks
+// This internal component contains all the client-side logic.
+// It must be rendered within a component that has the 'use client' directive.
 function BuildContentInternal({ templateId }: BuildContentProps) {
     const { setTemplate, isPremiumUnlocked } = useCvContext();
     const router = useRouter();
@@ -50,7 +50,8 @@ function BuildContentInternal({ templateId }: BuildContentProps) {
     );
 }
 
-// This wrapper is the Client Component Boundary
+// This wrapper is the Client Component Boundary.
+// It is marked with 'use client' and can use hooks and providers.
 function BuildContent({ templateId }: BuildContentProps) {
   'use client';
 
@@ -61,7 +62,8 @@ function BuildContent({ templateId }: BuildContentProps) {
   )
 }
 
-// This is the main page component, which is a Server Component
+// This is the main page component, which is a Server Component.
+// It is responsible for fetching data (like params) and passing it to client components.
 export default function BuilderPage({ params }: BuilderPageProps) {
   const { templateId } = params;
 
