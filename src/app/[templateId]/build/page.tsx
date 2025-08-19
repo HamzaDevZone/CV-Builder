@@ -1,29 +1,24 @@
 
+'use client';
+
 import { CvForm } from '@/components/cv-form';
 import { CvPreviewPanel } from '@/components/cv-preview-panel';
 import { Header } from '@/components/header';
 import { CvProvider, useCvContext } from '@/context/cv-context';
 import { type Template } from '@/lib/types';
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
-interface BuilderPageProps {
-  params: {
-    templateId: Template;
-  }
-}
-
-interface BuildContentProps {
-    templateId: Template;
-}
-
-// This internal component contains all the client-side logic.
-// It must be rendered within a component that has the 'use client' directive.
-function BuildContentInternal({ templateId }: BuildContentProps) {
-    const { setTemplate, isPremiumUnlocked } = useCvContext();
+function BuilderPageContent() {
+    const params = useParams();
     const router = useRouter();
+    const { setTemplate, isPremiumUnlocked } = useCvContext();
+    const templateId = params.templateId as Template;
 
     useEffect(() => {
+        // templateId might be undefined on initial render, so we guard against that.
+        if (!templateId) return;
+
         const isUnlocked = templateId === 'classic' || isPremiumUnlocked(templateId);
         if (!isUnlocked) {
             router.push('/templates');
@@ -31,6 +26,18 @@ function BuildContentInternal({ templateId }: BuildContentProps) {
         }
         setTemplate(templateId);
     }, [templateId, setTemplate, isPremiumUnlocked, router]);
+
+    if (!templateId) {
+        // You can render a loading state while waiting for params
+        return (
+             <div className="flex flex-col h-screen bg-secondary/30">
+                <Header />
+                <main className="flex-1 overflow-y-auto flex items-center justify-center">
+                    <p>Loading...</p>
+                </main>
+            </div>
+        )
+    }
 
     return (
         <div className="flex flex-col h-screen bg-secondary/30">
@@ -51,24 +58,11 @@ function BuildContentInternal({ templateId }: BuildContentProps) {
     );
 }
 
-// This wrapper is the Client Component Boundary.
-// It is marked with 'use client' and can use hooks and providers.
-function BuildContent({ templateId }: BuildContentProps) {
-  'use client';
 
+export default function BuilderPage() {
   return (
     <CvProvider>
-      <BuildContentInternal templateId={templateId} />
+      <BuilderPageContent />
     </CvProvider>
   )
-}
-
-// This is the main page component, which is a Server Component.
-// It is responsible for fetching data (like params) and passing it to client components.
-export default function BuilderPage({ params }: BuilderPageProps) {
-  const { templateId } = params;
-
-  return (
-    <BuildContent templateId={templateId} />
-  );
 }
