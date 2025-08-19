@@ -74,11 +74,9 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
                   <div className="relative inline-block">
                     <div className="w-36 h-36 rounded-full p-2 mt-8 shadow-lg" style={{backgroundColor: 'var(--background-cv)'}}>
                       {personalDetails.photo ? (
-                        <Image src={personalDetails.photo} alt={personalDetails.name} width={136} height={136} className="w-full h-full object-cover rounded-full" />
+                        <Image src={personalDetails.photo} alt={personalDetails.name} width={136} height={136} className="w-full h-full object-cover rounded-full" data-ai-hint="person face" />
                       ) : (
-                        <div className="w-full h-full bg-muted rounded-full flex items-center justify-center">
-                          <UserIcon className="w-20 h-20 text-muted-foreground/50"/>
-                        </div>
+                         <Image src="https://placehold.co/136x136.png" alt="placeholder" width={136} height={136} className="w-full h-full object-cover rounded-full" data-ai-hint="person face" />
                       )}
                     </div>
                   </div>
@@ -154,13 +152,16 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
             return (
                 <div style={cvStyles} className={cn(cvClasses, "p-10 flex flex-col min-h-full relative bg-[--background-cv] text-[--foreground-cv]")}>
                     {renderPremiumWatermark()}
+                    <div className="w-full h-40 mb-10" style={{backgroundColor: 'var(--accent-color)'}}>
+                        <Image src="https://placehold.co/800x200.png" alt="header image" width={800} height={200} className="w-full h-full object-cover opacity-20" data-ai-hint="abstract texture" />
+                    </div>
                     
-                    <header className="mb-10 text-center">
-                        <h1 className="text-5xl font-extrabold tracking-tight text-[--foreground-cv]">{personalDetails.name || 'YOUR NAME'}</h1>
-                        <p className="text-lg font-medium tracking-widest mt-2" style={{color: 'var(--accent-color)'}}>{personalDetails.jobTitle || 'PROFESSIONAL TITLE'}</p>
+                    <header className="mb-10 text-center -mt-32 relative z-10">
+                        <h1 className="text-5xl font-extrabold tracking-tight text-white">{personalDetails.name || 'YOUR NAME'}</h1>
+                        <p className="text-lg font-medium tracking-widest mt-2 text-white/80">{personalDetails.jobTitle || 'PROFESSIONAL TITLE'}</p>
                     </header>
                     
-                    <div className="flex justify-center items-center gap-x-6 gap-y-2 flex-wrap text-sm text-[--muted-foreground-cv] border-y-2 py-3 mb-10" style={{borderColor: 'var(--accent-color)'}}>
+                    <div className="flex justify-center items-center gap-x-6 gap-y-2 flex-wrap text-sm text-[--muted-foreground-cv] border-y py-3 mb-10" style={{borderColor: 'var(--accent-color)'}}>
                         {personalDetails.email && <p className="flex items-center gap-2"><Mail size={14}/>{personalDetails.email}</p>}
                         {personalDetails.phone && <p className="flex items-center gap-2"><Phone size={14}/>{personalDetails.phone}</p>}
                         {personalDetails.address && <p className="flex items-center gap-2"><MapPin size={14}/>{personalDetails.address}</p>}
@@ -224,11 +225,9 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
               <header className="flex items-center gap-6">
                  <div className="w-32 h-32 rounded-full bg-secondary overflow-hidden border-4 shadow-lg flex-shrink-0" style={{ borderColor: 'var(--accent-color)'}}>
                   {personalDetails.photo ? (
-                    <Image src={personalDetails.photo} alt={personalDetails.name} width={128} height={128} className="w-full h-full object-cover" />
+                    <Image src={personalDetails.photo} alt={personalDetails.name} width={128} height={128} className="w-full h-full object-cover" data-ai-hint="person face" />
                   ) : (
-                    <div className="w-full h-full bg-muted flex items-center justify-center">
-                      <UserIcon className="w-16 h-16 text-muted-foreground/50"/>
-                    </div>
+                    <Image src="https://placehold.co/128x128.png" alt="placeholder" width={128} height={128} className="w-full h-full object-cover" data-ai-hint="person face" />
                   )}
                 </div>
                 <div>
@@ -320,11 +319,9 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
                  <div className="flex flex-col items-center text-center">
                     <div className="w-32 h-32 rounded-full bg-white/20 overflow-hidden border-4 border-white shadow-lg mb-4">
                     {personalDetails.photo ? (
-                        <Image src={personalDetails.photo} alt={personalDetails.name} width={128} height={128} className="w-full h-full object-cover" />
+                        <Image src={personalDetails.photo} alt={personalDetails.name} width={128} height={128} className="w-full h-full object-cover" data-ai-hint="person face" />
                     ) : (
-                        <div className="w-full h-full bg-white/20 flex items-center justify-center">
-                        <UserIcon className="w-16 h-16 text-white/50"/>
-                        </div>
+                       <Image src="https://placehold.co/128x128.png" alt="placeholder" width={128} height={128} className="w-full h-full object-cover" data-ai-hint="person face" />
                     )}
                     </div>
                     <h1 className="text-3xl font-bold text-white">{personalDetails.name || 'Your Name'}</h1>
@@ -400,11 +397,9 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
                  <header className="text-center md:text-left md:flex items-center gap-6 border-b pb-4" style={{borderColor: 'var(--accent-color)'}}>
                   <div className="w-24 h-24 rounded-full bg-muted overflow-hidden border-2 border-border flex-shrink-0 mx-auto md:mx-0">
                      {personalDetails.photo ? (
-                        <Image src={personalDetails.photo} alt={personalDetails.name} width={96} height={96} className="w-full h-full object-cover" />
+                        <Image src={personalDetails.photo} alt={personalDetails.name} width={96} height={96} className="w-full h-full object-cover" data-ai-hint="person face" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                            <UserIcon className="w-12 h-12 text-muted-foreground/50"/>
-                        </div>
+                        <Image src="https://placehold.co/96x96.png" alt="placeholder" width={96} height={96} className="w-full h-full object-cover" data-ai-hint="person face" />
                       )}
                   </div>
                   <div className="mt-4 md:mt-0">

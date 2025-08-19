@@ -21,7 +21,7 @@ export function Header() {
                     Home
                 </Button>
             </Link>
-            <Link href="/#templates">
+            <Link href="/templates">
                 <Button variant="ghost" size="sm">
                     <LayoutTemplate className="h-4 w-4 mr-2"/>
                     Templates
