@@ -49,9 +49,8 @@ export async function submitPayment(data: { username: string; transactionId: str
 export const getPayments = cache(
     async (): Promise<Payment[]> => {
         // In a real app, you'd fetch this from a database
-        // Return a deep copy to avoid mutation and ensure serializability
-        const sortedPayments = [...payments].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-        return JSON.parse(JSON.stringify(sortedPayments));
+        const sortedPayments = [...payments].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        return sortedPayments;
     },
     ['payments'], // Cache key
     {
@@ -84,7 +83,7 @@ export const getUsers = cache(
         }
         const users = Array.from(userMap.values());
         users.sort((a,b) => new Date(b.firstSeen).getTime() - new Date(a.firstSeen).getTime());
-        return JSON.parse(JSON.stringify(users));
+        return users;
     },
     ['users'],
     {
