@@ -43,7 +43,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
   };
   
   const cvClasses = cn(
-    'w-full h-full transform origin-top-left',
+    'w-full transform origin-top-left min-h-full',
   );
 
   const renderPremiumWatermark = () => isPremiumLocked && (
@@ -66,7 +66,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
     switch (template) {
         case 'professional':
            return (
-             <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col min-h-full relative bg-[--background-cv] text-[--foreground-cv]")}>
+             <div className={cn("p-8 flex flex-col min-h-full relative text-[--foreground-cv]")}>
               {renderPremiumWatermark()}
               
               <header className="relative text-center mb-8">
@@ -150,7 +150,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
         
         case 'minimalist':
             return (
-                <div style={cvStyles} className={cn(cvClasses, "p-10 flex flex-col min-h-full relative bg-[--background-cv] text-[--foreground-cv]")}>
+                <div className={cn("p-10 flex flex-col min-h-full relative text-[--foreground-cv]")}>
                     {renderPremiumWatermark()}
                     <div className="w-full h-40 mb-10" style={{backgroundColor: 'var(--accent-color)'}}>
                         <Image src="https://placehold.co/800x200.png" alt="header image" width={800} height={200} className="w-full h-full object-cover opacity-20" data-ai-hint="abstract texture" />
@@ -219,7 +219,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
 
         case 'creative':
            return (
-            <div style={cvStyles} className={cn(cvClasses, "p-8 flex flex-col min-h-full relative bg-[--background-cv] text-[--foreground-cv]")}>
+            <div className={cn("p-8 flex flex-col min-h-full relative text-[--foreground-cv]")}>
               {renderPremiumWatermark()}
               
               <header className="flex items-center gap-6">
@@ -311,7 +311,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
           };
           
           return (
-            <div style={{...cvStyles, ...sidebarStyles}} className={cn("flex min-h-full relative bg-[--background-cv] text-[--foreground-cv]")}>
+            <div style={sidebarStyles} className={cn("flex min-h-full relative text-[--foreground-cv]")}>
                {renderPremiumWatermark()}
     
               {/* Left Sidebar */}
@@ -393,7 +393,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
         // Classic Template (Default)
         case 'classic':
              return (
-              <div style={cvStyles} className={cn(cvClasses, "p-4 md:p-8 bg-[--background-cv] text-[--foreground-cv]")}>
+              <div className={cn("p-4 md:p-8 text-[--foreground-cv]")}>
                  <header className="text-center md:text-left md:flex items-center gap-6 border-b pb-4" style={{borderColor: 'var(--accent-color)'}}>
                   <div className="w-24 h-24 rounded-full bg-muted overflow-hidden border-2 border-border flex-shrink-0 mx-auto md:mx-0">
                      {personalDetails.photo ? (
