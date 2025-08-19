@@ -41,7 +41,7 @@ export function Header() {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Settings</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push('/admin/login')}>
+                <DropdownMenuItem onSelect={() => router.push('/admin/login')}>
                     Admin Panel
                 </DropdownMenuItem>
                 <div className="flex items-center justify-between px-2 py-1.5 text-sm">
