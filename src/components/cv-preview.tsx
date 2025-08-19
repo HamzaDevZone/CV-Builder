@@ -40,10 +40,11 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
     '--secondary-foreground-cv': isDarkBackground ? '#d1d5db' : '#4b5563',
     '--muted-foreground-cv': isDarkBackground ? '#9ca3af' : '#6b7281',
     fontFamily: fontFamily,
+    backgroundColor: backgroundColor,
+    color: isDarkBackground ? '#ffffff' : '#111827',
   };
   
   const cvClasses = cn(
-    'text-[--foreground-cv] bg-[--background-cv]',
     'w-full h-full transform origin-top-left',
   );
 
@@ -71,9 +72,9 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
               {renderPremiumWatermark()}
               
               <header className="relative text-center mb-8">
-                  <div className="absolute top-0 left-0 w-full h-24 bg-[--accent-color]"></div>
+                  <div className="absolute top-0 left-0 w-full h-24" style={{backgroundColor: 'var(--accent-color)'}}></div>
                   <div className="relative inline-block">
-                    <div className="w-36 h-36 rounded-full bg-background-cv p-2 mt-8 shadow-lg">
+                    <div className="w-36 h-36 rounded-full p-2 mt-8 shadow-lg" style={{backgroundColor: 'var(--background-cv)'}}>
                       {personalDetails.photo ? (
                         <Image src={personalDetails.photo} alt={personalDetails.name} width={136} height={136} className="w-full h-full object-cover rounded-full" />
                       ) : (
@@ -87,37 +88,37 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
 
               <div className="text-center mb-8">
                   <h1 className="text-4xl font-bold text-[--foreground-cv]">{personalDetails.name || 'Your Name'}</h1>
-                  <p className="text-xl text-[--accent-color] font-semibold mt-1">{personalDetails.jobTitle || 'Professional Title'}</p>
+                  <p className="text-xl font-semibold mt-1" style={{color: 'var(--accent-color)'}}>{personalDetails.jobTitle || 'Professional Title'}</p>
               </div>
 
                <div className="grid grid-cols-12 gap-8">
                   {/* Left Column */}
                   <div className="col-span-4 space-y-6">
                       <div>
-                          <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] pb-1 border-b-2 border-[--accent-color] mb-3">About Me</h2>
+                          <h2 className="text-lg font-bold uppercase tracking-wider pb-1 border-b-2 mb-3" style={{color: 'var(--accent-color)', borderColor: 'var(--accent-color)'}}>About Me</h2>
                           <p className="text-sm leading-relaxed text-[--secondary-foreground-cv]">{personalDetails.summary || 'A brief professional summary...'}</p>
                       </div>
                       <div>
-                          <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] pb-1 border-b-2 border-[--accent-color] mb-3">Contact</h2>
+                          <h2 className="text-lg font-bold uppercase tracking-wider pb-1 border-b-2 mb-3" style={{color: 'var(--accent-color)', borderColor: 'var(--accent-color)'}}>Contact</h2>
                           <div className="space-y-2 text-sm text-[--secondary-foreground-cv]">
-                              {personalDetails.email && <p className="flex items-center gap-2 break-all"><Mail className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.email}</span></p>}
-                              {personalDetails.phone && <p className="flex items-center gap-2 break-all"><Phone className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.phone}</span></p>}
-                              {personalDetails.address && <p className="flex items-center gap-2 break-all"><MapPin className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.address}</span></p>}
-                              {personalDetails.linkedin && <p className="flex items-center gap-2 break-all"><Linkedin className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.linkedin}</span></p>}
-                              {personalDetails.website && <p className="flex items-center gap-2 break-all"><Globe className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.website}</span></p>}
+                              {personalDetails.email && <p className="flex items-center gap-2 break-all"><Mail className="flex-shrink-0" size={14} style={{color: 'var(--accent-color)'}}/> <span>{personalDetails.email}</span></p>}
+                              {personalDetails.phone && <p className="flex items-center gap-2 break-all"><Phone className="flex-shrink-0" size={14} style={{color: 'var(--accent-color)'}}/> <span>{personalDetails.phone}</span></p>}
+                              {personalDetails.address && <p className="flex items-center gap-2 break-all"><MapPin className="flex-shrink-0" size={14} style={{color: 'var(--accent-color)'}}/> <span>{personalDetails.address}</span></p>}
+                              {personalDetails.linkedin && <p className="flex items-center gap-2 break-all"><Linkedin className="flex-shrink-0" size={14} style={{color: 'var(--accent-color)'}}/> <span>{personalDetails.linkedin}</span></p>}
+                              {personalDetails.website && <p className="flex items-center gap-2 break-all"><Globe className="flex-shrink-0" size={14} style={{color: 'var(--accent-color)'}}/> <span>{personalDetails.website}</span></p>}
                           </div>
                       </div>
                   </div>
                   {/* Right Column */}
                   <div className="col-span-8 space-y-6">
                        <div>
-                          <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] pb-1 border-b-2 border-[--accent-color] mb-4">Skills</h2>
+                          <h2 className="text-lg font-bold uppercase tracking-wider pb-1 border-b-2 mb-4" style={{color: 'var(--accent-color)', borderColor: 'var(--accent-color)'}}>Skills</h2>
                           <ul className="flex flex-wrap gap-2">
-                              {skills.map(skill => skill.name && <li key={skill.id} className="bg-[--accent-color] text-white text-xs font-medium px-3 py-1 rounded-full">{skill.name}</li>)}
+                              {skills.map(skill => skill.name && <li key={skill.id} className="text-white text-xs font-medium px-3 py-1 rounded-full" style={{backgroundColor: 'var(--accent-color)'}}>{skill.name}</li>)}
                           </ul>
                       </div>
                       <div>
-                          <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] pb-1 border-b-2 border-[--accent-color] mb-4">Experience</h2>
+                          <h2 className="text-lg font-bold uppercase tracking-wider pb-1 border-b-2 mb-4" style={{color: 'var(--accent-color)', borderColor: 'var(--accent-color)'}}>Experience</h2>
                           <div className="space-y-4">
                               {workExperience.map(exp => exp.jobTitle && (
                                   <div key={exp.id}>
@@ -132,7 +133,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
                           </div>
                       </div>
                       <div>
-                          <h2 className="text-lg font-bold uppercase tracking-wider text-[--accent-color] pb-1 border-b-2 border-[--accent-color] mb-4">Education</h2>
+                          <h2 className="text-lg font-bold uppercase tracking-wider pb-1 border-b-2 mb-4" style={{color: 'var(--accent-color)', borderColor: 'var(--accent-color)'}}>Education</h2>
                           <div className="space-y-4">
                               {education.map(edu => edu.degree && (
                                   <div key={edu.id}>
@@ -158,10 +159,10 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
                     
                     <header className="mb-10 text-center">
                         <h1 className="text-5xl font-extrabold tracking-tight text-[--foreground-cv]">{personalDetails.name || 'YOUR NAME'}</h1>
-                        <p className="text-lg text-[--accent-color] font-medium tracking-widest mt-2">{personalDetails.jobTitle || 'PROFESSIONAL TITLE'}</p>
+                        <p className="text-lg font-medium tracking-widest mt-2" style={{color: 'var(--accent-color)'}}>{personalDetails.jobTitle || 'PROFESSIONAL TITLE'}</p>
                     </header>
                     
-                    <div className="flex justify-center items-center gap-x-6 gap-y-2 flex-wrap text-sm text-[--muted-foreground-cv] border-y-2 border-[--accent-color] py-3 mb-10">
+                    <div className="flex justify-center items-center gap-x-6 gap-y-2 flex-wrap text-sm text-[--muted-foreground-cv] border-y-2 py-3 mb-10" style={{borderColor: 'var(--accent-color)'}}>
                         {personalDetails.email && <p className="flex items-center gap-2"><Mail size={14}/>{personalDetails.email}</p>}
                         {personalDetails.phone && <p className="flex items-center gap-2"><Phone size={14}/>{personalDetails.phone}</p>}
                         {personalDetails.address && <p className="flex items-center gap-2"><MapPin size={14}/>{personalDetails.address}</p>}
@@ -171,14 +172,14 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
 
                     <div className="space-y-8">
                         <div>
-                            <h2 className="text-sm font-bold uppercase tracking-widest text-[--accent-color] mb-3">Profile</h2>
+                            <h2 className="text-sm font-bold uppercase tracking-widest mb-3" style={{color: 'var(--accent-color)'}}>Profile</h2>
                             <p className="text-sm leading-relaxed text-[--secondary-foreground-cv]">{personalDetails.summary || 'A brief professional summary...'}</p>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                             <div className="space-y-8">
                                 <div>
-                                    <h2 className="text-sm font-bold uppercase tracking-widest text-[--accent-color] mb-4">Experience</h2>
+                                    <h2 className="text-sm font-bold uppercase tracking-widest mb-4" style={{color: 'var(--accent-color)'}}>Experience</h2>
                                     <div className="space-y-5">
                                         {workExperience.map(exp => exp.jobTitle && (
                                             <div>
@@ -191,7 +192,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
                                     </div>
                                 </div>
                                 <div>
-                                    <h2 className="text-sm font-bold uppercase tracking-widest text-[--accent-color] mb-4">Education</h2>
+                                    <h2 className="text-sm font-bold uppercase tracking-widest mb-4" style={{color: 'var(--accent-color)'}}>Education</h2>
                                     <div className="space-y-5">
                                         {education.map(edu => edu.degree && (
                                             <div>
@@ -205,7 +206,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
                                 </div>
                             </div>
                             <div>
-                                <h2 className="text-sm font-bold uppercase tracking-widest text-[--accent-color] mb-4">Skills</h2>
+                                <h2 className="text-sm font-bold uppercase tracking-widest mb-4" style={{color: 'var(--accent-color)'}}>Skills</h2>
                                 <ul className="space-y-2">
                                     {skills.map(skill => skill.name && (
                                         <li className="text-sm font-medium">{skill.name}</li>
@@ -248,11 +249,11 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
                    <div>
                       <h2 className="text-lg font-bold uppercase tracking-wider mb-3" style={{color: 'var(--accent-color)'}}>Contact</h2>
                       <div className="space-y-2 text-sm text-[--secondary-foreground-cv]">
-                        {personalDetails.email && <p className="flex items-center gap-2 break-all"><Mail className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.email}</span></p>}
-                        {personalDetails.phone && <p className="flex items-center gap-2 break-all"><Phone className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.phone}</span></p>}
-                        {personalDetails.address && <p className="flex items-center gap-2 break-all"><MapPin className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.address}</span></p>}
-                        {personalDetails.linkedin && <p className="flex items-center gap-2 break-all"><Linkedin className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.linkedin}</span></p>}
-                        {personalDetails.website && <p className="flex items-center gap-2 break-all"><Globe className="text-[--accent-color] flex-shrink-0" size={14}/> <span>{personalDetails.website}</span></p>}
+                        {personalDetails.email && <p className="flex items-center gap-2 break-all"><Mail className="flex-shrink-0" size={14} style={{color: 'var(--accent-color)'}}/> <span>{personalDetails.email}</span></p>}
+                        {personalDetails.phone && <p className="flex items-center gap-2 break-all"><Phone className="flex-shrink-0" size={14} style={{color: 'var(--accent-color)'}}/> <span>{personalDetails.phone}</span></p>}
+                        {personalDetails.address && <p className="flex items-center gap-2 break-all"><MapPin className="flex-shrink-0" size={14} style={{color: 'var(--accent-color)'}}/> <span>{personalDetails.address}</span></p>}
+                        {personalDetails.linkedin && <p className="flex items-center gap-2 break-all"><Linkedin className="flex-shrink-0" size={14} style={{color: 'var(--accent-color)'}}/> <span>{personalDetails.linkedin}</span></p>}
+                        {personalDetails.website && <p className="flex items-center gap-2 break-all"><Globe className="flex-shrink-0" size={14} style={{color: 'var(--accent-color)'}}/> <span>{personalDetails.website}</span></p>}
                       </div>
                     </div>
                     <div>
@@ -260,7 +261,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
                         <ul className="space-y-1.5">
                             {skills.map(skill => skill.name && (
                                 <li key={skill.id} className="flex items-center gap-2">
-                                    <Star className="text-[--accent-color]" size={14}/>
+                                    <Star size={14} style={{color: 'var(--accent-color)'}}/>
                                     <span className="text-sm font-medium">{skill.name}</span>
                                 </li>
                             ))}
@@ -312,19 +313,12 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
             '--sidebar-muted-fg': '#e5e7eb',
           };
           
-          const contentStyles: CSSProperties = {
-              '--content-bg': 'var(--background-cv)',
-              '--content-fg': 'var(--foreground-cv)',
-              '--content-secondary-fg': 'var(--secondary-foreground-cv)',
-              '--content-muted-fg': 'var(--muted-foreground-cv)',
-          };
-          
           return (
-            <div style={{...cvStyles, ...sidebarStyles, ...contentStyles}} className={cn("flex min-h-full relative")}>
+            <div style={{...cvStyles, ...sidebarStyles}} className={cn("flex min-h-full relative")}>
                {renderPremiumWatermark()}
     
               {/* Left Sidebar */}
-              <div className="w-[35%] flex-shrink-0 bg-[--sidebar-bg] text-[--sidebar-fg] p-8 space-y-8">
+              <div className="w-[35%] flex-shrink-0 p-8 space-y-8" style={{backgroundColor: 'var(--sidebar-bg)', color: 'var(--sidebar-fg)'}}>
                  <div className="flex flex-col items-center text-center">
                     <div className="w-32 h-32 rounded-full bg-white/20 overflow-hidden border-4 border-white shadow-lg mb-4">
                     {personalDetails.photo ? (
@@ -361,37 +355,37 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
               </div>
     
               {/* Right Column */}
-              <div className="w-[65%] bg-[--content-bg] text-[--content-fg] p-8 space-y-8">
+              <div className="w-[65%] p-8 space-y-8" style={{backgroundColor: 'var(--background-cv)', color: 'var(--foreground-cv)'}}>
                 <div>
-                  <h2 className="text-2xl font-bold text-[--accent-color] uppercase tracking-wider flex items-center gap-3"><UserIcon/>Profile</h2>
-                  <p className="mt-3 text-sm leading-relaxed text-[--content-secondary-fg]">{personalDetails.summary || 'A brief professional summary...'}</p>
+                  <h2 className="text-2xl font-bold uppercase tracking-wider flex items-center gap-3" style={{color: 'var(--accent-color)'}}><UserIcon/>Profile</h2>
+                  <p className="mt-3 text-sm leading-relaxed text-[--secondary-foreground-cv]">{personalDetails.summary || 'A brief professional summary...'}</p>
                 </div>
                 
                  <div>
-                  <h2 className="text-2xl font-bold text-[--accent-color] uppercase tracking-wider flex items-center gap-3"><Briefcase/>Experience</h2>
-                  <div className="space-y-6 mt-4 border-l-2 border-[--accent-color] pl-6">
+                  <h2 className="text-2xl font-bold uppercase tracking-wider flex items-center gap-3" style={{color: 'var(--accent-color)'}}><Briefcase/>Experience</h2>
+                  <div className="space-y-6 mt-4 border-l-2 pl-6" style={{borderColor: 'var(--accent-color)'}}>
                   {workExperience.map(exp => exp.jobTitle && (
                     <div key={exp.id} className="relative">
-                       <div className="w-4 h-4 rounded-full bg-[--content-bg] border-2 border-[--accent-color] absolute -left-[35px] mt-1.5"></div>
-                      <p className="text-xs font-medium text-[--content-muted-fg]">{exp.startDate} - {exp.endDate}</p>
-                      <h3 className="text-lg font-semibold text-[--content-fg] mt-1">{exp.jobTitle}</h3>
-                      <p className="text-md font-medium text-[--content-secondary-fg]">{exp.company} | {exp.location}</p>
-                      <p className="mt-2 text-sm whitespace-pre-wrap text-[--content-secondary-fg]">{exp.description}</p>
+                       <div className="w-4 h-4 rounded-full border-2 absolute -left-[35px] mt-1.5" style={{backgroundColor: 'var(--background-cv)', borderColor: 'var(--accent-color)'}}></div>
+                      <p className="text-xs font-medium text-[--muted-foreground-cv]">{exp.startDate} - {exp.endDate}</p>
+                      <h3 className="text-lg font-semibold text-[--foreground-cv] mt-1">{exp.jobTitle}</h3>
+                      <p className="text-md font-medium text-[--secondary-foreground-cv]">{exp.company} | {exp.location}</p>
+                      <p className="mt-2 text-sm whitespace-pre-wrap text-[--secondary-foreground-cv]">{exp.description}</p>
                     </div>
                   ))}
                   </div>
                 </div>
     
                 <div>
-                  <h2 className="text-2xl font-bold text-[--accent-color] uppercase tracking-wider flex items-center gap-3"><GraduationCap/>Education</h2>
-                  <div className="space-y-6 mt-4 border-l-2 border-[--accent-color] pl-6">
+                  <h2 className="text-2xl font-bold uppercase tracking-wider flex items-center gap-3" style={{color: 'var(--accent-color)'}}><GraduationCap/>Education</h2>
+                  <div className="space-y-6 mt-4 border-l-2 pl-6" style={{borderColor: 'var(--accent-color)'}}>
                   {education.map(edu => edu.degree && (
                     <div key={edu.id} className="relative">
-                      <div className="w-4 h-4 rounded-full bg-[--content-bg] border-2 border-[--accent-color] absolute -left-[35px] mt-1.5"></div>
-                      <p className="text-xs font-medium text-[--content-muted-fg]">{edu.startDate} - {edu.endDate}</p>
-                      <h3 className="text-lg font-semibold text-[--content-fg] mt-1">{edu.degree}</h3>
-                      <p className="text-md font-medium text-[--content-secondary-fg]">{edu.institution} | {edu.location}</p>
-                      <p className="mt-2 text-sm whitespace-pre-wrap text-[--content-secondary-fg]">{edu.description}</p>
+                      <div className="w-4 h-4 rounded-full border-2 absolute -left-[35px] mt-1.5" style={{backgroundColor: 'var(--background-cv)', borderColor: 'var(--accent-color)'}}></div>
+                      <p className="text-xs font-medium text-[--muted-foreground-cv]">{edu.startDate} - {edu.endDate}</p>
+                      <h3 className="text-lg font-semibold text-[--foreground-cv] mt-1">{edu.degree}</h3>
+                      <p className="text-md font-medium text-[--secondary-foreground-cv]">{edu.institution} | {edu.location}</p>
+                      <p className="mt-2 text-sm whitespace-pre-wrap text-[--secondary-foreground-cv]">{edu.description}</p>
                     </div>
                   ))}
                   </div>
@@ -496,7 +490,7 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
 
   return (
     <div ref={ref} className="bg-card shadow-lg h-full w-full overflow-y-auto">
-      <div className={cn(cvClasses, 'relative')}>
+      <div style={cvStyles} className={cn(cvClasses, 'relative')}>
         {renderContent()}
       </div>
     </div>

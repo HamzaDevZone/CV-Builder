@@ -62,6 +62,7 @@
 @media print {
   body {
     background: #fff !important;
+    color: #000 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -89,6 +90,7 @@
   .cv-print-area {
     width: 210mm !important;
     height: 297mm !important;
+    min-height: 297mm !important;
     margin: 0 !important;
     padding: 0 !important;
     box-shadow: none !important;
@@ -96,6 +98,7 @@
     transform: scale(1) !important;
     overflow: visible !important;
     page-break-after: always;
+    page-break-inside: avoid;
   }
   
   .cv-print-area > div {
