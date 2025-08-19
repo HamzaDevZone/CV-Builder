@@ -1,15 +1,21 @@
+// This file follows the recommended Next.js App Router pattern.
+// 1. The default export `BuilderPage` is a Server Component.
+//    - It is responsible for server-side tasks like reading route parameters (`params`).
+// 2. The `BuilderClientPage` is the Client Component (marked with 'use client').
+//    - It handles all client-side logic, state, and hooks (useEffect, useRouter, etc.).
+//    - The Server Component renders this Client Component, passing the `templateId`.
 
-'use client';
-
-import { CvForm } from '@/components/cv-form';
-import { CvPreviewPanel } from '@/components/cv-preview-panel';
-import { Header } from '@/components/header';
 import { CvProvider, useCvContext } from '@/context/cv-context';
 import { type Template } from '@/lib/types';
+import { Header } from '@/components/header';
+import { CvForm } from '@/components/cv-form';
+import { CvPreviewPanel } from '@/components/cv-preview-panel';
+import 'client-only';
 import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
-function BuilderPageContent() {
+
+function BuilderClientContent() {
     const params = useParams();
     const router = useRouter();
     const { setTemplate, isPremiumUnlocked } = useCvContext();
@@ -58,11 +64,17 @@ function BuilderPageContent() {
     );
 }
 
+// This is the Client Component Wrapper. It provides the context and renders the content.
+function BuilderClientPage() {
+    'use client';
+    return (
+        <CvProvider>
+            <BuilderClientContent />
+        </CvProvider>
+    )
+}
 
+// This is the main page component, which is a Server Component
 export default function BuilderPage() {
-  return (
-    <CvProvider>
-      <BuilderPageContent />
-    </CvProvider>
-  )
+  return <BuilderClientPage />;
 }
