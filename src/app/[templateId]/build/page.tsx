@@ -1,6 +1,4 @@
 
-'use client';
-
 import { CvForm } from '@/components/cv-form';
 import { CvPreviewPanel } from '@/components/cv-preview-panel';
 import { Header } from '@/components/header';
@@ -19,7 +17,10 @@ interface BuildContentProps {
     templateId: Template;
 }
 
-function BuildContent({ templateId }: BuildContentProps) {
+
+function BuildContentInternal({ templateId }: BuildContentProps) {
+    'use client';
+    
     const { setTemplate, isPremiumUnlocked } = useCvContext();
     const router = useRouter();
 
@@ -51,13 +52,22 @@ function BuildContent({ templateId }: BuildContentProps) {
     );
 }
 
+
+function BuildContent({ templateId }: BuildContentProps) {
+  'use client';
+
+  return (
+    <CvProvider>
+      <BuildContentInternal templateId={templateId} />
+    </CvProvider>
+  )
+}
+
 // This is the main page component, which is a Server Component
 export default function BuilderPage({ params }: BuilderPageProps) {
   const { templateId } = params;
 
   return (
-    <CvProvider>
-      <BuildContent templateId={templateId} />
-    </CvProvider>
+    <BuildContent templateId={templateId} />
   );
 }
