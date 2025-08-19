@@ -11,7 +11,7 @@ import { ArrowRight, CheckCircle, Star } from 'lucide-react';
 import { Footer } from '@/components/footer';
 import { CvPreview } from '@/components/cv-preview';
 import { defaultCvData } from '@/lib/schemas';
-import { useCvContext } from '@/context/cv-context';
+import { CvProvider, useCvContext } from '@/context/cv-context';
 import { templateColors } from '@/context/cv-context';
 import type { Template } from '@/lib/types';
 

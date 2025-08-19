@@ -129,15 +129,15 @@ export function CvProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [checkAllPremiumStatuses]);
 
-  const refreshStatus = () => {
+  const refreshStatus = useCallback(() => {
       checkAllPremiumStatuses();
-  }
+  }, [checkAllPremiumStatuses]);
 
-  const isPremiumUnlocked = (templateId: Template): boolean => {
+  const isPremiumUnlocked = useCallback((templateId: Template): boolean => {
       const t = allTemplates.find(t => t.id === templateId);
       if (!t || t.type === 'free') return true;
       return premiumStatus[templateId] || false;
-  }
+  }, [premiumStatus]);
 
   const setTemplate = (newTemplate: Template) => {
     _setTemplate(newTemplate);
@@ -158,8 +158,7 @@ export function CvProvider({ children }: { children: ReactNode }) {
   }, []);
 
 
-  return (
-    <CvContext.Provider value={{ 
+  const value = { 
         cvData, 
         setCvData, 
         template, 
@@ -173,7 +172,10 @@ export function CvProvider({ children }: { children: ReactNode }) {
         isPremiumUnlocked, 
         pendingTemplate, 
         refreshStatus 
-    }}>
+    };
+
+  return (
+    <CvContext.Provider value={value}>
       {children}
     </CvContext.Provider>
   );
