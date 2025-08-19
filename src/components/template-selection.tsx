@@ -243,7 +243,7 @@ export function TemplateSelection() {
                                         <div className="flex items-center gap-1 text-xs text-green-600 font-medium mt-1">
                                             <CheckCircle className="h-4 w-4" /> Unlocked
                                         </div>
-                                        <Button className="w-full mt-2">
+                                        <Button className="w-full mt-2" onClick={(e) => { e.stopPropagation(); router.push(`/${temp.id}/build`); }}>
                                             Let's Build
                                         </Button>
                                     </>
