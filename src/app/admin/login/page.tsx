@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4 relative">
-       <Button variant="outline" onClick={() => router.back()} className="absolute top-4 left-4">
+       <Button variant="outline" onClick={() => router.push('/')} className="absolute top-4 left-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to App
         </Button>

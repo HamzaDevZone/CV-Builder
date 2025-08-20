@@ -112,8 +112,8 @@ function AdManagement({ initialAds }: { initialAds: Ad[] }) {
                 <CardDescription>List of all active brand promotions.</CardDescription>
             </CardHeader>
             <CardContent>
-                 <div className="border rounded-lg">
-                    <Table>
+                 <div className="border rounded-lg overflow-x-auto">
+                    <Table className="min-w-full">
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Image</TableHead>
@@ -244,8 +244,8 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
                 <CardDescription>Review and approve user payments for premium access.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="border rounded-lg">
-                        <Table>
+                    <div className="border rounded-lg overflow-x-auto">
+                        <Table className="min-w-full">
                             <TableHeader>
                             <TableRow>
                                 <TableHead>Username</TableHead>
@@ -317,8 +317,8 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
                 <CardDescription>A list of all users who have submitted a payment.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="border rounded-lg">
-                        <Table>
+                    <div className="border rounded-lg overflow-x-auto">
+                        <Table className="min-w-full">
                             <TableHeader>
                             <TableRow>
                                 <TableHead>Username</TableHead>
