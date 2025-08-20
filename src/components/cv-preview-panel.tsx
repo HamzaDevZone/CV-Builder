@@ -79,6 +79,11 @@ export function CvPreviewPanel() {
       const dataUrl = await htmlToImage.toPng(node, {
           quality: 1.0,
           pixelRatio: 2,
+          fetchRequestInit: {
+            // This is the fix for the CORS issue with Google Fonts
+            mode: 'no-cors',
+            credentials: 'omit',
+          }
       });
 
       // Create a temporary link to trigger the download
@@ -149,6 +154,11 @@ export function CvPreviewPanel() {
         const dataUrl = await toFn(node, {
             quality: 1.0,
             pixelRatio: 2, 
+             fetchRequestInit: {
+                // This is the fix for the CORS issue with Google Fonts
+                mode: 'no-cors',
+                credentials: 'omit',
+            }
         });
         const link = document.createElement('a');
         link.download = `${cvData.personalDetails.name.replace(/ /g, '_')}_CV.${format}`;
