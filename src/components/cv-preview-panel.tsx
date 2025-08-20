@@ -25,7 +25,7 @@ import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
-import * as htmlToImage from 'html-to-image';
+import * as htmlToImage from 'html-to-image-fork';
 import { accentColors, fonts, templateColors } from '@/context/cv-context';
 
 
@@ -77,11 +77,6 @@ export function CvPreviewPanel() {
       const dataUrl = await htmlToImage.toPng(node, {
           quality: 1.0,
           pixelRatio: 2,
-          // This filter function will skip any <link> elements (external stylesheets)
-          filter: (node) => node.tagName !== 'LINK',
-          style: {
-              fontFamily: 'sans-serif', // Use a generic font family for export
-          },
       });
 
       const pdfIframe = document.createElement('iframe');
@@ -107,13 +102,16 @@ export function CvPreviewPanel() {
           </html>
         `);
         pdfDoc.close();
-        pdfIframe.contentWindow?.focus();
-        pdfIframe.contentWindow?.print();
+        
+        // Wait for the iframe to load before printing
+        pdfIframe.onload = function() {
+            pdfIframe.contentWindow?.focus();
+            pdfIframe.contentWindow?.print();
+            setTimeout(() => {
+                document.body.removeChild(pdfIframe);
+            }, 1000);
+        };
       }
-
-      setTimeout(() => {
-        document.body.removeChild(pdfIframe);
-      }, 1000);
 
     } catch (error) {
         console.error('Oops, something went wrong!', error);
@@ -144,11 +142,6 @@ export function CvPreviewPanel() {
         const dataUrl = await toFn(node, {
             quality: 1.0,
             pixelRatio: 2, 
-            // This filter function will skip any <link> elements (external stylesheets)
-            filter: (node) => node.tagName !== 'LINK',
-             style: {
-                fontFamily: 'sans-serif', // Use a generic font family for export
-            },
         });
         const link = document.createElement('a');
         link.download = `${cvData.personalDetails.name.replace(/ /g, '_')}_CV.${format}`;
@@ -371,5 +364,3 @@ export function CvPreviewPanel() {
     </>
   );
 }
-
-    
