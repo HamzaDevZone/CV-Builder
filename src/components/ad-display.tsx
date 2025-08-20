@@ -51,7 +51,7 @@ export function AdDisplay({ initialAds }: { initialAds: Ad[] }) {
 
   return (
     <AnimatePresence>
-     {isVisible && (
+     {isVisible && currentAd && (
         <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -64,7 +64,7 @@ export function AdDisplay({ initialAds }: { initialAds: Ad[] }) {
                 <div className="flex items-center gap-4">
                     <Image
                         src={currentAd.imageUrl}
-                        alt={currentAd.brandName}
+                        alt={currentAd.brandName || ''}
                         width={120}
                         height={40}
                         className="rounded-md object-cover hidden sm:block"
