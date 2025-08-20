@@ -176,7 +176,10 @@ export function TemplateSelection() {
                                         <div className="flex items-center gap-1 text-xs text-green-600 font-medium mt-1">
                                             <CheckCircle className="h-4 w-4" /> Unlocked
                                         </div>
-                                        <Button className="w-full mt-2" onClick={() => handleSelectTemplate(temp.id)}>
+                                        <Button className="w-full mt-2" onClick={(e) => {
+                                            e.stopPropagation(); // Prevent card's onClick from firing as well
+                                            handleSelectTemplate(temp.id);
+                                        }}>
                                             Let's Build
                                         </Button>
                                     </>
@@ -209,7 +212,7 @@ export function TemplateSelection() {
                   Purchase the "{allTemplates.find(t => t.id === templateToPurchase)?.name}" template for 24 hours.
                 </DialogDescription>
               </DialogHeader>
-              <div className="py-4">
+              <div className="py-4 max-h-[60vh] overflow-y-auto pr-2">
                 <div className="grid grid-cols-2 gap-2 mb-4">
                     {paymentMethods.map(method => (
                         <Button 
@@ -272,11 +275,11 @@ export function TemplateSelection() {
                     </div>
                 )}
               </div>
-              <DialogFooter className="flex-col gap-2">
+              <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4 border-t">
+                <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)} disabled={isSubmitting}>Cancel</Button>
                 <Button onClick={handlePaymentSubmit} disabled={isSubmitting || !['easypaisa', 'bank'].includes(selectedPaymentMethod)}>
                   {isSubmitting ? 'Submitting...' : 'Submit for Verification'}
                 </Button>
-                <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)} disabled={isSubmitting}>Cancel</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
