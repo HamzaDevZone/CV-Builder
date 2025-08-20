@@ -304,7 +304,7 @@ export function CvPreviewPanel() {
       </Card>
       
       {/* This wrapper is only for printing, and now for image generation */}
-      <div className="print:block cv-print-wrapper" aria-hidden="true">
+      <div className="cv-print-wrapper" aria-hidden="true">
         <div ref={printRef} className="cv-print-area">
           <CvPreview
             data={cvData}

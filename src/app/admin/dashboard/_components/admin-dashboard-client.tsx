@@ -173,7 +173,7 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
   const router = useRouter();
   const { toast } = useToast();
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const paymentsData = await getPayments();
       const usersData = await getUsers();
@@ -186,7 +186,7 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
         variant: 'destructive',
       });
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     const isAdmin = localStorage.getItem('isAdmin');
@@ -197,13 +197,6 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
-  // Refresh data periodically
-  useEffect(() => {
-    const interval = setInterval(fetchData, 5000); // Poll every 5 seconds
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
 
   const handleApprove = async (transactionId: string) => {
     setIsApproving(transactionId);
