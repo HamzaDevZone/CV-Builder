@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { getPayments, approvePayment, getUsers, createAd, deleteAd, getAds } from '@/lib/actions';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -18,55 +18,35 @@ import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
-function AdManagement({ initialAds }: { initialAds: Ad[] }) {
-  const [ads, setAds] = useState(initialAds);
+function AdManagement({ ads, onDataChange }: { ads: Ad[], onDataChange: () => void }) {
   const [imageUrl, setImageUrl] = useState("https://placehold.co/300x100.png");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isLoading, startTransition] = useTransition();
   const { toast } = useToast();
 
-  const handleCreateAd = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-    const formData = new FormData(event.currentTarget);
-    const data = {
-      brandName: formData.get('brandName') as string,
-      offer: formData.get('offer') as string,
-      linkUrl: formData.get('linkUrl') as string,
-      imageUrl: formData.get('imageUrl') as string,
-    };
-
-    if (!data.brandName || !data.offer || !data.linkUrl || !data.imageUrl) {
-        toast({ title: 'Error', description: 'Please fill all fields.', variant: 'destructive'});
-        setIsSubmitting(false);
-        return;
-    }
-
-    try {
-      await createAd(data);
-      toast({ title: 'Success', description: 'Ad created successfully.', className: 'bg-green-500 text-white' });
-      (event.target as HTMLFormElement).reset();
-      setImageUrl("https://placehold.co/300x100.png");
-      const updatedAds = await getAds();
-      setAds(updatedAds);
-    } catch (error) {
-      toast({ title: 'Error', description: 'Failed to create ad.', variant: 'destructive' });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleCreateAd = async (formData: FormData) => {
+    startTransition(async () => {
+        try {
+            await createAd(formData);
+            toast({ title: 'Success', description: 'Ad created successfully.', className: 'bg-green-500 text-white' });
+            setImageUrl("https://placehold.co/300x100.png");
+            onDataChange(); // Notify parent to re-fetch data
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'An unknown error occurred.';
+            toast({ title: 'Error Creating Ad', description: message, variant: 'destructive' });
+        }
+    });
   };
-
+  
   const handleDeleteAd = async (adId: string) => {
-    setIsDeleting(adId);
-    try {
-      await deleteAd(adId);
-      toast({ title: 'Success', description: 'Ad deleted successfully.' });
-      setAds(ads.filter(ad => ad.id !== adId));
-    } catch (error) {
-      toast({ title: 'Error', description: 'Failed to delete ad.', variant: 'destructive' });
-    } finally {
-      setIsDeleting(null);
-    }
+     startTransition(async () => {
+        try {
+          await deleteAd(adId);
+          toast({ title: 'Success', description: 'Ad deleted successfully.' });
+          onDataChange(); // Notify parent to re-fetch data
+        } catch (error) {
+          toast({ title: 'Error', description: 'Failed to delete ad.', variant: 'destructive' });
+        }
+    });
   };
 
   return (
@@ -77,7 +57,11 @@ function AdManagement({ initialAds }: { initialAds: Ad[] }) {
             <CardTitle>Create New Ad</CardTitle>
             <CardDescription>Post a new ad for a brand, store, or restaurant.</CardDescription>
           </CardHeader>
-          <form onSubmit={handleCreateAd}>
+          <form action={handleCreateAd} onSubmit={(e) => {
+              // This allows the form to be reset after submission via transition
+              if(isLoading) e.preventDefault();
+              else (e.target as HTMLFormElement).reset();
+          }}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <label htmlFor="brandName">Brand Name</label>
@@ -98,9 +82,9 @@ function AdManagement({ initialAds }: { initialAds: Ad[] }) {
               </div>
             </CardContent>
             <CardFooter>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isLoading}>
                 <PlusCircle className="mr-2 h-4 w-4" />
-                {isSubmitting ? 'Posting...' : 'Post Ad'}
+                {isLoading ? 'Posting...' : 'Post Ad'}
               </Button>
             </CardFooter>
           </form>
@@ -148,7 +132,7 @@ function AdManagement({ initialAds }: { initialAds: Ad[] }) {
                                   </Button>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <Button size="icon" variant="destructive" onClick={() => handleDeleteAd(ad.id)} disabled={isDeleting === ad.id}>
+                                    <Button size="icon" variant="destructive" onClick={() => handleDeleteAd(ad.id)} disabled={isLoading}>
                                         <Trash2 className="h-4 w-4" />
                                         <span className="sr-only">Delete</span>
                                     </Button>
@@ -170,24 +154,32 @@ function AdManagement({ initialAds }: { initialAds: Ad[] }) {
 export function AdminDashboardClient({ initialPayments, initialUsers, initialAds }: { initialPayments: Payment[], initialUsers: User[], initialAds: Ad[] }) {
   const [payments, setPayments] = useState<Payment[]>(initialPayments);
   const [users, setUsers] = useState<User[]>(initialUsers);
-  const [isApproving, setIsApproving] = useState<string | null>(null);
+  const [ads, setAds] = useState<Ad[]>(initialAds);
+
+  const [isLoading, startTransition] = useTransition();
   const [viewingReceiptUrl, setViewingReceiptUrl] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
-    try {
-      const paymentsData = await getPayments();
-      const usersData = await getUsers();
-      setPayments(paymentsData);
-      setUsers(usersData);
-    } catch (error) {
-       toast({
-        title: 'Error',
-        description: 'Failed to refresh data.',
-        variant: 'destructive',
-      });
-    }
+    startTransition(async () => {
+        try {
+            const [paymentsData, usersData, adsData] = await Promise.all([
+                getPayments(),
+                getUsers(),
+                getAds()
+            ]);
+            setPayments(paymentsData);
+            setUsers(usersData);
+            setAds(adsData);
+        } catch (error) {
+           toast({
+            title: 'Error',
+            description: 'Failed to refresh data.',
+            variant: 'destructive',
+          });
+        }
+    });
   }, [toast]);
 
   useEffect(() => {
@@ -201,24 +193,23 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
   
 
   const handleApprove = async (transactionId: string) => {
-    setIsApproving(transactionId);
-    try {
-      await approvePayment(transactionId);
-      await fetchData();
-      toast({
-        title: 'Success',
-        description: `Payment ${transactionId} approved.`,
-        className: 'bg-green-500 text-white',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to approve payment.',
-        variant: 'destructive',
-      });
-    } finally {
-        setIsApproving(null);
-    }
+    startTransition(async () => {
+      try {
+        await approvePayment(transactionId);
+        await fetchData(); // Refetch all data after approval
+        toast({
+          title: 'Success',
+          description: `Payment ${transactionId} approved.`,
+          className: 'bg-green-500 text-white',
+        });
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to approve payment.',
+          variant: 'destructive',
+        });
+      }
+    });
   };
 
   return (
@@ -295,8 +286,8 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
                                     </TableCell>
                                     <TableCell className="text-right">
                                     {payment.status === 'pending' && (
-                                        <Button size="sm" onClick={() => handleApprove(payment.transactionId)} disabled={isApproving === payment.transactionId}>
-                                          {isApproving === payment.transactionId ? 'Approving...' : 'Approve'}
+                                        <Button size="sm" onClick={() => handleApprove(payment.transactionId)} disabled={isLoading}>
+                                          {isLoading ? 'Approving...' : 'Approve'}
                                         </Button>
                                     )}
                                     </TableCell>
@@ -348,7 +339,7 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
             </Card>
           </TabsContent>
            <TabsContent value="ads">
-             <AdManagement initialAds={initialAds} />
+             <AdManagement ads={ads} onDataChange={fetchData} />
            </TabsContent>
         </Tabs>
 

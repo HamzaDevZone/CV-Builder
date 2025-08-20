@@ -185,7 +185,18 @@ export const getAds = cache(
     }
 );
 
-export async function createAd(data: { brandName: string; offer: string; linkUrl: string; imageUrl: string; }) {
+export async function createAd(formData: FormData) {
+    const data = {
+      brandName: formData.get('brandName') as string,
+      offer: formData.get('offer') as string,
+      linkUrl: formData.get('linkUrl') as string,
+      imageUrl: formData.get('imageUrl') as string,
+    };
+    
+    if (!data.brandName || !data.offer || !data.linkUrl || !data.imageUrl) {
+        throw new Error('Please fill all fields.');
+    }
+
     const newAd: Ad = {
         id: crypto.randomUUID(),
         brandName: data.brandName,
@@ -206,5 +217,5 @@ export async function deleteAd(adId: string) {
         revalidateTag('ads');
         return { success: true };
     }
-    return { success: false, message: 'Ad not found' };
+    throw new Error('Ad not found');
 }
