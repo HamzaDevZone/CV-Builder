@@ -80,7 +80,7 @@ const allTemplates = [
 
 export function CvProvider({ children }: { children: ReactNode }) {
   const [cvData, setCvData] = useState<CvData>(defaultCvData);
-  const [template, _setTemplate] = useState<Template>('classic');
+  const [_setTemplate, setTemplateState] = useState<Template>('classic');
   const [accentColor, setAccentColor] = useState<string>(defaultAccentColor);
   const [backgroundColor, setBackgroundColor] = useState<string>(defaultBackgroundColor);
   const [fontFamily, setFontFamily] = useState<string>(fonts.inter.cssValue);
@@ -101,12 +101,11 @@ export function CvProvider({ children }: { children: ReactNode }) {
 
     const premiumTemplates = allTemplates.filter(t => t.type === 'premium');
     
-    // Using Promise.all to fetch statuses concurrently for better performance
     const statuses = await Promise.all(premiumTemplates.map(t => 
         getPremiumStatus({ username, templateId: t.id })
             .catch(error => {
                 console.error(`Failed to check premium status for ${t.id}:`, error);
-                return { isUnlocked: false, pendingUntil: undefined }; // Return a default object on error
+                return { isUnlocked: false, pendingUntil: undefined }; 
             })
     ));
 
@@ -128,7 +127,7 @@ export function CvProvider({ children }: { children: ReactNode }) {
     
   useEffect(() => {
     checkAllPremiumStatuses();
-    const interval = setInterval(checkAllPremiumStatuses, 10000); // Check every 10 seconds to reduce load
+    const interval = setInterval(checkAllPremiumStatuses, 10000);
     
     return () => clearInterval(interval);
   }, [checkAllPremiumStatuses]);
@@ -144,28 +143,26 @@ export function CvProvider({ children }: { children: ReactNode }) {
   }, [premiumStatus]);
 
   const setTemplate = (newTemplate: Template) => {
-    _setTemplate(newTemplate);
+    setTemplateState(newTemplate);
     const theme = templateColors[newTemplate];
     if (theme) {
         setBackgroundColor(theme.background);
         setAccentColor(theme.accent);
     } else {
-        // Revert to defaults if the new template has no theme
         setBackgroundColor(defaultBackgroundColor);
         setAccentColor(defaultAccentColor);
     }
   }
 
-  // On initial load, set the colors for the default template
   useEffect(() => {
     setTemplate('classic');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
 
   const value = { 
         cvData, 
         setCvData, 
-        template, 
+        template: _setTemplate, 
         setTemplate, 
         accentColor, 
         setAccentColor, 
