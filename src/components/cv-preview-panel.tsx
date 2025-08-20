@@ -59,22 +59,74 @@ export function CvPreviewPanel() {
     downloadFn();
   }
 
-  const handleDownloadPdf = () => {
-    // Temporarily remove the watermark for printing if the template is unlocked
+  const handleDownloadPdf = async () => {
     const node = printRef.current;
-    if (!node) return;
-
-    const watermark = node.querySelector('.premium-watermark') as HTMLElement | null;
+    if (!node) {
+      toast({ title: 'Error', description: 'Could not find CV to download.', variant: 'destructive'});
+      return;
+    };
     
+    setIsDownloading(true);
+    
+    // Temporarily remove the watermark for printing if the template is unlocked
+    const watermark = node.querySelector('.premium-watermark') as HTMLElement | null;
     if (isCurrentTemplateUnlocked && watermark) {
       watermark.style.display = 'none';
     }
-    
-    window.print();
-    
-    // Restore watermark after printing
-    if (isCurrentTemplateUnlocked && watermark) {
-       watermark.style.display = 'flex';
+
+    try {
+      // Use html-to-image to get a PNG data URL
+      const dataUrl = await htmlToImage.toPng(node, {
+          quality: 1.0,
+          pixelRatio: 2,
+      });
+
+      // Create a temporary link to trigger the download
+      const link = document.createElement('a');
+      link.download = `${cvData.personalDetails.name.replace(/ /g, '_')}_CV.pdf`;
+      
+      // We will create a simple PDF that contains the image.
+      // For more complex PDFs, a library like jsPDF would be needed.
+      // But for a single-page CV, this is a robust way to get a high-quality print.
+      const pdfIframe = document.createElement('iframe');
+      pdfIframe.style.visibility = 'hidden';
+      document.body.appendChild(pdfIframe);
+      const pdfDoc = pdfIframe.contentWindow?.document;
+      
+      if (pdfDoc) {
+        pdfDoc.open();
+        pdfDoc.write(`
+          <html>
+            <head>
+              <title>${cvData.personalDetails.name} CV</title>
+              <style>
+                @page { size: A4; margin: 0; }
+                body { margin: 0; }
+                img { width: 100%; display: block; }
+              </style>
+            </head>
+            <body>
+              <img src="${dataUrl}" />
+            </body>
+          </html>
+        `);
+        pdfDoc.close();
+        pdfIframe.contentWindow?.focus();
+        pdfIframe.contentWindow?.print();
+      }
+
+      document.body.removeChild(pdfIframe);
+
+
+    } catch (error) {
+        console.error('Oops, something went wrong!', error);
+        toast({ title: 'Download Failed', description: 'Could not generate PDF. Please try again.', variant: 'destructive'})
+    } finally {
+        setIsDownloading(false);
+        // Restore watermark after printing
+        if (isCurrentTemplateUnlocked && watermark) {
+            watermark.style.display = 'flex';
+        }
     }
   };
   
@@ -245,8 +297,8 @@ export function CvPreviewPanel() {
         </CardContent>
       </Card>
       
-      {/* This wrapper is only for printing */}
-      <div className="hidden print:block cv-print-wrapper">
+      {/* This wrapper is only for printing, and now for image generation */}
+      <div className="print:block cv-print-wrapper" aria-hidden="true">
         <div ref={printRef} className="cv-print-area">
           <CvPreview
             data={cvData}
