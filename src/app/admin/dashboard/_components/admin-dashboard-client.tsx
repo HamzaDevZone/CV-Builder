@@ -19,6 +19,7 @@ import Image from 'next/image';
 
 function AdManagement({ initialAds }: { initialAds: Ad[] }) {
   const [ads, setAds] = useState(initialAds);
+  const [imageUrl, setImageUrl] = useState("https://placehold.co/300x100.png");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const { toast } = useToast();
@@ -44,6 +45,7 @@ function AdManagement({ initialAds }: { initialAds: Ad[] }) {
       await createAd(data);
       toast({ title: 'Success', description: 'Ad created successfully.', className: 'bg-green-500 text-white' });
       (event.target as HTMLFormElement).reset();
+      setImageUrl("https://placehold.co/300x100.png");
       const updatedAds = await getAds();
       setAds(updatedAds);
     } catch (error) {
@@ -90,7 +92,7 @@ function AdManagement({ initialAds }: { initialAds: Ad[] }) {
               </div>
               <div className="space-y-2">
                 <label htmlFor="imageUrl">Image URL</label>
-                <Input id="imageUrl" name="imageUrl" type="url" placeholder="https://placehold.co/300x100.png" defaultValue="https://placehold.co/300x100.png" required />
+                <Input id="imageUrl" name="imageUrl" type="url" placeholder="https://placehold.co/300x100.png" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} required />
                  <p className="text-xs text-muted-foreground">Use a service like <a href="https://placehold.co" target="_blank" className="underline">placehold.co</a> for placeholder images.</p>
               </div>
             </CardContent>
@@ -171,7 +173,7 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
   const router = useRouter();
   const { toast } = useToast();
 
-  const fetchData = useCallback(async () => {
+  const fetchData = async () => {
     try {
       const paymentsData = await getPayments();
       const usersData = await getUsers();
@@ -184,7 +186,7 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
         variant: 'destructive',
       });
     }
-  }, [toast]);
+  };
 
   useEffect(() => {
     const isAdmin = localStorage.getItem('isAdmin');
@@ -199,7 +201,8 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
   useEffect(() => {
     const interval = setInterval(fetchData, 5000); // Poll every 5 seconds
     return () => clearInterval(interval);
-  }, [fetchData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
   const handleApprove = async (transactionId: string) => {
@@ -228,9 +231,11 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
     <>
         <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-             <Button variant="outline" onClick={() => router.back()}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
+             <Button variant="outline" asChild>
+                 <Link href="/">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to App
+                 </Link>
             </Button>
         </div>
         <Tabs defaultValue="payments" className="w-full">
