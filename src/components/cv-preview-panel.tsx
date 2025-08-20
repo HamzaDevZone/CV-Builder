@@ -68,31 +68,20 @@ export function CvPreviewPanel() {
     
     setIsDownloading(true);
     
-    // Temporarily remove the watermark for printing if the template is unlocked
     const watermark = node.querySelector('.premium-watermark') as HTMLElement | null;
     if (isCurrentTemplateUnlocked && watermark) {
       watermark.style.display = 'none';
     }
 
     try {
-      // Use html-to-image to get a PNG data URL
       const dataUrl = await htmlToImage.toPng(node, {
           quality: 1.0,
           pixelRatio: 2,
           fetchRequestInit: {
-            // This is the fix for the CORS issue with Google Fonts
-            mode: 'no-cors',
             credentials: 'omit',
           }
       });
 
-      // Create a temporary link to trigger the download
-      const link = document.createElement('a');
-      link.download = `${cvData.personalDetails.name.replace(/ /g, '_')}_CV.pdf`;
-      
-      // We will create a simple PDF that contains the image.
-      // For more complex PDFs, a library like jsPDF would be needed.
-      // But for a single-page CV, this is a robust way to get a high-quality print.
       const pdfIframe = document.createElement('iframe');
       pdfIframe.style.visibility = 'hidden';
       document.body.appendChild(pdfIframe);
@@ -120,15 +109,15 @@ export function CvPreviewPanel() {
         pdfIframe.contentWindow?.print();
       }
 
-      document.body.removeChild(pdfIframe);
-
+      setTimeout(() => {
+        document.body.removeChild(pdfIframe);
+      }, 1000);
 
     } catch (error) {
         console.error('Oops, something went wrong!', error);
         toast({ title: 'Download Failed', description: 'Could not generate PDF. Please try again.', variant: 'destructive'})
     } finally {
         setIsDownloading(false);
-        // Restore watermark after printing
         if (isCurrentTemplateUnlocked && watermark) {
             watermark.style.display = 'flex';
         }
@@ -142,7 +131,6 @@ export function CvPreviewPanel() {
         return;
     };
    
-    // Temporarily remove the watermark for image generation if the template is unlocked
     const watermark = node.querySelector('.premium-watermark') as HTMLElement | null;
     if (isCurrentTemplateUnlocked && watermark) {
       watermark.style.display = 'none';
@@ -155,8 +143,6 @@ export function CvPreviewPanel() {
             quality: 1.0,
             pixelRatio: 2, 
              fetchRequestInit: {
-                // This is the fix for the CORS issue with Google Fonts
-                mode: 'no-cors',
                 credentials: 'omit',
             }
         });
@@ -170,7 +156,6 @@ export function CvPreviewPanel() {
         toast({ title: 'Download Failed', description: 'Could not generate image. Please try again.', variant: 'destructive'})
     } finally {
         setIsDownloading(false);
-         // Restore watermark after generation
         if (isCurrentTemplateUnlocked && watermark) {
             watermark.style.display = 'flex';
         }
@@ -289,15 +274,15 @@ export function CvPreviewPanel() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56">
-                <DropdownMenuItem onClick={() => handleUnlockAndDownload(handleDownloadPdf)}>
+                <DropdownMenuItem onClick={() => handleUnlockAndDownload(handleDownloadPdf)} disabled={isDownloading}>
                   <FileType className="mr-2 h-4 w-4" />
                   <span>Download as PDF</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleUnlockAndDownload(() => handleDownloadImage('png'))}>
+                <DropdownMenuItem onClick={() => handleUnlockAndDownload(() => handleDownloadImage('png'))} disabled={isDownloading}>
                    <ImageIcon className="mr-2 h-4 w-4" />
                   <span>Download as PNG</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleUnlockAndDownload(() => handleDownloadImage('jpeg'))}>
+                <DropdownMenuItem onClick={() => handleUnlockAndDownload(() => handleDownloadImage('jpeg'))} disabled={isDownloading}>
                    <ImageIcon className="mr-2 h-4 w-4" />
                   <span>Download as JPEG</span>
                 </DropdownMenuItem>
@@ -382,5 +367,7 @@ export function CvPreviewPanel() {
     </>
   );
 }
+
+    
 
     
