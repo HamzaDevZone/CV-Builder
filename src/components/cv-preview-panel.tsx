@@ -77,9 +77,11 @@ export function CvPreviewPanel() {
       const dataUrl = await htmlToImage.toPng(node, {
           quality: 1.0,
           pixelRatio: 2,
-          fetchRequestInit: {
-            credentials: 'omit',
-          }
+          // This filter function will skip any <link> elements (external stylesheets)
+          filter: (node) => node.tagName !== 'LINK',
+          style: {
+              fontFamily: 'sans-serif', // Use a generic font family for export
+          },
       });
 
       const pdfIframe = document.createElement('iframe');
@@ -142,9 +144,11 @@ export function CvPreviewPanel() {
         const dataUrl = await toFn(node, {
             quality: 1.0,
             pixelRatio: 2, 
-             fetchRequestInit: {
-                credentials: 'omit',
-            }
+            // This filter function will skip any <link> elements (external stylesheets)
+            filter: (node) => node.tagName !== 'LINK',
+             style: {
+                fontFamily: 'sans-serif', // Use a generic font family for export
+            },
         });
         const link = document.createElement('a');
         link.download = `${cvData.personalDetails.name.replace(/ /g, '_')}_CV.${format}`;
@@ -367,7 +371,5 @@ export function CvPreviewPanel() {
     </>
   );
 }
-
-    
 
     
