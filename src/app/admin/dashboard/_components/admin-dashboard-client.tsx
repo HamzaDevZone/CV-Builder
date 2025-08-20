@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 function AdManagement({ initialAds }: { initialAds: Ad[] }) {
   const [ads, setAds] = useState(initialAds);
@@ -170,6 +171,7 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
   const [payments, setPayments] = useState<Payment[]>(initialPayments);
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [isApproving, setIsApproving] = useState<string | null>(null);
+  const [viewingReceiptUrl, setViewingReceiptUrl] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -202,7 +204,6 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
     setIsApproving(transactionId);
     try {
       await approvePayment(transactionId);
-      // Data will be refetched by the polling mechanism, but we can also trigger it manually
       await fetchData();
       toast({
         title: 'Success',
@@ -284,11 +285,9 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
                                     </TableCell>
                                     <TableCell>
                                       {payment.receiptDataUrl ? (
-                                        <Button asChild variant="outline" size="sm">
-                                          <Link href={payment.receiptDataUrl} target="_blank" rel="noopener noreferrer">
+                                        <Button variant="outline" size="sm" onClick={() => setViewingReceiptUrl(payment.receiptDataUrl as string)}>
                                             <Eye className="mr-2 h-4 w-4"/>
                                             View
-                                          </Link>
                                         </Button>
                                       ) : (
                                         <span className="text-muted-foreground">N/A</span>
@@ -352,8 +351,21 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
              <AdManagement initialAds={initialAds} />
            </TabsContent>
         </Tabs>
+
+        {/* Receipt Viewing Dialog */}
+        <Dialog open={!!viewingReceiptUrl} onOpenChange={(isOpen) => !isOpen && setViewingReceiptUrl(null)}>
+            <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                    <DialogTitle>Payment Receipt</DialogTitle>
+                    <DialogDescription>Image of the receipt uploaded by the user.</DialogDescription>
+                </DialogHeader>
+                <div className="mt-4 max-h-[70vh] overflow-y-auto">
+                    {viewingReceiptUrl && (
+                        <Image src={viewingReceiptUrl} alt="Payment Receipt" width={800} height={1200} className="w-full h-auto object-contain rounded-md" />
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
     </>
   );
 }
-
-    
