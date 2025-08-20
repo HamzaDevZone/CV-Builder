@@ -22,6 +22,7 @@ function AdManagement({ ads, onDataChange }: { ads: Ad[], onDataChange: () => vo
   const [imageUrl, setImageUrl] = useState("https://placehold.co/300x100.png");
   const [isLoading, startTransition] = useTransition();
   const { toast } = useToast();
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleCreateAd = async (formData: FormData) => {
     startTransition(async () => {
@@ -29,7 +30,8 @@ function AdManagement({ ads, onDataChange }: { ads: Ad[], onDataChange: () => vo
             await createAd(formData);
             toast({ title: 'Success', description: 'Ad created successfully.', className: 'bg-green-500 text-white' });
             setImageUrl("https://placehold.co/300x100.png");
-            onDataChange(); // Notify parent to re-fetch data
+            formRef.current?.reset();
+            onDataChange();
         } catch (error) {
             const message = error instanceof Error ? error.message : 'An unknown error occurred.';
             toast({ title: 'Error Creating Ad', description: message, variant: 'destructive' });
@@ -42,7 +44,7 @@ function AdManagement({ ads, onDataChange }: { ads: Ad[], onDataChange: () => vo
         try {
           await deleteAd(adId);
           toast({ title: 'Success', description: 'Ad deleted successfully.' });
-          onDataChange(); // Notify parent to re-fetch data
+          onDataChange();
         } catch (error) {
           toast({ title: 'Error', description: 'Failed to delete ad.', variant: 'destructive' });
         }
@@ -57,11 +59,7 @@ function AdManagement({ ads, onDataChange }: { ads: Ad[], onDataChange: () => vo
             <CardTitle>Create New Ad</CardTitle>
             <CardDescription>Post a new ad for a brand, store, or restaurant.</CardDescription>
           </CardHeader>
-          <form action={handleCreateAd} onSubmit={(e) => {
-              // This allows the form to be reset after submission via transition
-              if(isLoading) e.preventDefault();
-              else (e.target as HTMLFormElement).reset();
-          }}>
+          <form action={handleCreateAd} ref={formRef}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <label htmlFor="brandName">Brand Name</label>
@@ -77,7 +75,7 @@ function AdManagement({ ads, onDataChange }: { ads: Ad[], onDataChange: () => vo
               </div>
               <div className="space-y-2">
                 <label htmlFor="imageUrl">Image URL</label>
-                <Input id="imageUrl" name="imageUrl" type="url" placeholder="https://placehold.co/300x100.png" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} required />
+                <Input id="imageUrl" name="imageUrl" type="url" placeholder="https://placehold.co/300x100.png" defaultValue={imageUrl} onChange={(e) => setImageUrl(e.target.value)} required />
                  <p className="text-xs text-muted-foreground">Use a service like <a href="https://placehold.co" target="_blank" className="underline">placehold.co</a> for placeholder images.</p>
               </div>
             </CardContent>
@@ -155,14 +153,14 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
   const [payments, setPayments] = useState<Payment[]>(initialPayments);
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [ads, setAds] = useState<Ad[]>(initialAds);
-
-  const [isLoading, startTransition] = useTransition();
+  const [isDataLoading, startDataTransition] = useTransition();
+  const [isActionLoading, startActionTransition] = useTransition();
   const [viewingReceiptUrl, setViewingReceiptUrl] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
-  const fetchData = useCallback(async () => {
-    startTransition(async () => {
+  const fetchData = useCallback(() => {
+    startDataTransition(async () => {
         try {
             const [paymentsData, usersData, adsData] = await Promise.all([
                 getPayments(),
@@ -186,17 +184,15 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
     const isAdmin = localStorage.getItem('isAdmin');
     if (isAdmin !== 'true') {
       router.push('/admin/login');
-      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [router]);
   
 
-  const handleApprove = async (transactionId: string) => {
-    startTransition(async () => {
+  const handleApprove = (transactionId: string) => {
+    startActionTransition(async () => {
       try {
         await approvePayment(transactionId);
-        await fetchData(); // Refetch all data after approval
+        fetchData();
         toast({
           title: 'Success',
           description: `Payment ${transactionId} approved.`,
@@ -211,6 +207,8 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
       }
     });
   };
+
+  const isLoading = isDataLoading || isActionLoading;
 
   return (
     <>
@@ -360,3 +358,5 @@ export function AdminDashboardClient({ initialPayments, initialUsers, initialAds
     </>
   );
 }
+
+    
