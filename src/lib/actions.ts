@@ -4,6 +4,7 @@
 import { cvEnhancementTool, type CvEnhancementToolInput } from "@/ai/flows/cv-enhancement-tool";
 import type { Payment, Template, User, Ad } from './types';
 import { unstable_cache as cache, revalidateTag } from 'next/cache';
+import { templateTiers } from "@/lib/template-tiers";
 
 // Mock database - This is a simple in-memory store.
 // In a real production app, you would use a persistent database like Firestore.
@@ -102,7 +103,7 @@ export async function approvePayment(transactionId: string) {
     const payment = payments.find(p => p.transactionId === transactionId);
     if (payment) {
         payment.status = 'approved';
-        // The timestamp is now the approval time
+        // The timestamp is now the approval time, not submission time
         payment.timestamp = new Date();
         console.log("Payment approved:", payment);
     } else {
@@ -117,18 +118,26 @@ export async function approvePayment(transactionId: string) {
 
 export async function getPremiumStatus(data: { username: string, templateId: Template }): Promise<{ isUnlocked: boolean, pendingUntil?: number }> {
     const { username, templateId } = data;
-    
-    // If there is no username, the user isn't logged in, so nothing can be unlocked.
+
     if (!username) {
         return { isUnlocked: false };
     }
-    
-    const allUserPayments = payments.filter(p => p.username === username);
-    const now = new Date().getTime();
 
-    // 1. Check for an active APPROVED payment for the specific template
+    const allUserPayments = payments.filter(p => p.username === username);
+    const now = Date.now();
+
+    // Find the tier of the requested template
+    const requestedTier = templateTiers.find(tier => tier.templates.some(t => t.id === templateId));
+    if (!requestedTier || requestedTier.price === undefined) {
+        // This handles free templates or templates not found in tiers
+        return { isUnlocked: true };
+    }
+    
+    const templatesInTier = requestedTier.templates.map(t => t.id);
+
+    // 1. Check for an active APPROVED payment for ANY template in the same tier
     const approvedPayment = allUserPayments.find(p =>
-        p.templateId === templateId &&
+        templatesInTier.includes(p.templateId) &&
         p.status === 'approved' &&
         (now - new Date(p.timestamp).getTime()) / (1000 * 60 * 60) <= 24 // Check if within 24 hours
     );
@@ -137,25 +146,23 @@ export async function getPremiumStatus(data: { username: string, templateId: Tem
         return { isUnlocked: true };
     }
 
-    // 2. If not approved, check for a recent PENDING payment for that template
-    const pendingPayment = allUserPayments.find(p =>
-        p.templateId === templateId &&
-        p.status === 'pending'
-    );
-    
-    if(pendingPayment) {
+    // 2. If not approved, check for a recent PENDING payment for the specific template
+    // We only show pending for the specific template being clicked, not the whole tier.
+    const pendingPayment = allUserPayments
+        .filter(p => p.templateId === templateId && p.status === 'pending')
+        .sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0]; // Get the most recent one
+
+    if (pendingPayment) {
         const submissionTime = new Date(pendingPayment.timestamp).getTime();
-        const timeDifference = now - submissionTime;
-        const minutesDifference = timeDifference / (1000 * 60);
+        const timeSinceSubmission = now - submissionTime;
 
         // If payment is pending and submitted within the last 5 minutes
-        if (minutesDifference <= 5) {
-            const pendingUntil = submissionTime + (5 * 60 * 1000); // 5 minutes from submission time
+        if (timeSinceSubmission <= 5 * 60 * 1000) {
+            const pendingUntil = submissionTime + (5 * 60 * 1000);
             return { isUnlocked: false, pendingUntil };
         }
     }
-    
-    // 3. If no approved or recent pending payment is found
+
     return { isUnlocked: false };
 }
 
