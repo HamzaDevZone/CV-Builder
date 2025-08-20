@@ -25,7 +25,7 @@ import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
-import * as htmlToImage from 'html-to-image-fork';
+import * as htmlToImage from 'html-to-image';
 import { accentColors, fonts, templateColors } from '@/context/cv-context';
 
 
@@ -68,22 +68,28 @@ export function CvPreviewPanel() {
     
     setIsDownloading(true);
     
+    // Hide watermark for unlocked premium templates
     const watermark = node.querySelector('.premium-watermark') as HTMLElement | null;
     if (isCurrentTemplateUnlocked && watermark) {
       watermark.style.display = 'none';
     }
 
     try {
+      // The most reliable way: convert to PNG first, then print that PNG to PDF.
       const dataUrl = await htmlToImage.toPng(node, {
-          quality: 1.0,
-          pixelRatio: 2,
+          quality: 1,
+          pixelRatio: 3, // Higher pixel ratio for better quality
+          style: {
+            fontFamily: 'sans-serif', // Use websafe fonts for download
+          }
       });
 
+      // Create an invisible iframe to print the image
       const pdfIframe = document.createElement('iframe');
       pdfIframe.style.visibility = 'hidden';
       document.body.appendChild(pdfIframe);
+
       const pdfDoc = pdfIframe.contentWindow?.document;
-      
       if (pdfDoc) {
         pdfDoc.open();
         pdfDoc.write(`
@@ -103,14 +109,16 @@ export function CvPreviewPanel() {
         `);
         pdfDoc.close();
         
-        // Wait for the iframe to load before printing
         pdfIframe.onload = function() {
             pdfIframe.contentWindow?.focus();
             pdfIframe.contentWindow?.print();
+            // Clean up after a delay
             setTimeout(() => {
                 document.body.removeChild(pdfIframe);
             }, 1000);
         };
+      } else {
+         throw new Error("Could not create PDF document.");
       }
 
     } catch (error) {
@@ -118,6 +126,7 @@ export function CvPreviewPanel() {
         toast({ title: 'Download Failed', description: 'Could not generate PDF. Please try again.', variant: 'destructive'})
     } finally {
         setIsDownloading(false);
+        // Show watermark again if it was hidden
         if (isCurrentTemplateUnlocked && watermark) {
             watermark.style.display = 'flex';
         }
@@ -131,6 +140,7 @@ export function CvPreviewPanel() {
         return;
     };
    
+    // Hide watermark for unlocked premium templates
     const watermark = node.querySelector('.premium-watermark') as HTMLElement | null;
     if (isCurrentTemplateUnlocked && watermark) {
       watermark.style.display = 'none';
@@ -141,7 +151,10 @@ export function CvPreviewPanel() {
         const toFn = format === 'png' ? htmlToImage.toPng : htmlToImage.toJpeg;
         const dataUrl = await toFn(node, {
             quality: 1.0,
-            pixelRatio: 2, 
+            pixelRatio: 3, // Higher pixel ratio for better quality
+             style: {
+                fontFamily: 'sans-serif', // Use websafe fonts for download
+             }
         });
         const link = document.createElement('a');
         link.download = `${cvData.personalDetails.name.replace(/ /g, '_')}_CV.${format}`;
@@ -153,6 +166,7 @@ export function CvPreviewPanel() {
         toast({ title: 'Download Failed', description: 'Could not generate image. Please try again.', variant: 'destructive'})
     } finally {
         setIsDownloading(false);
+         // Show watermark again if it was hidden
         if (isCurrentTemplateUnlocked && watermark) {
             watermark.style.display = 'flex';
         }

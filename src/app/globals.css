@@ -65,29 +65,24 @@
   display: none; /* Hidden by default */
 }
 
-/* Old @media print rules can be removed or simplified */
 @media print {
-  /* You can keep basic body styles for the print view of the iframe */
-  body {
-    background: #fff !important;
-    color: #000 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  body * {
+    visibility: hidden;
   }
-
-  /* The new iframe-based method doesn't need these complex rules anymore */
-  body > * {
-    display: block !important;
+  .cv-print-area, .cv-print-area * {
+    visibility: visible;
   }
-  
-  .premium-watermark {
+  .cv-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+   .premium-watermark {
     display: none !important;
   }
-
   @page {
     size: A4;
     margin: 0;
   }
 }
-
-    
