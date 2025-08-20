@@ -66,7 +66,7 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="admin@example.com"
+                placeholder="admin@gmail.com"
               />
             </div>
             <div className="space-y-2">
