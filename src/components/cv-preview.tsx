@@ -33,14 +33,14 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
   
   const isDarkBackground = isDark(backgroundColor);
 
-  const cvStyles: CSSProperties = {
-    '--accent-color': accentColor,
-    '--background-cv': backgroundColor,
-    '--foreground-cv': isDarkBackground ? '#ffffff' : '#111827',
-    '--secondary-foreground-cv': isDarkBackground ? '#d1d5db' : '#4b5563',
-    '--muted-foreground-cv': isDarkBackground ? '#9ca3af' : '#6b7281',
-    fontFamily: fontFamily,
-  };
+  const cvStyles = {
+  '--accent-color': accentColor,
+  '--background-cv': backgroundColor,
+  '--foreground-cv': isDarkBackground ? '#ffffff' : '#111827',
+  '--secondary-foreground-cv': isDarkBackground ? '#d1d5db' : '#4b5563',
+  '--muted-foreground-cv': isDarkBackground ? '#9ca3af' : '#6b7281',
+  fontFamily: fontFamily,
+} as React.CSSProperties;
   
   const cvClasses = cn(
     'w-full transform origin-top-left min-h-full',
