@@ -303,12 +303,11 @@ export const CvPreview = forwardRef<HTMLDivElement, CvPreviewProps>(
             </div>
           );
         
-        case 'modern': {
-          const sidebarStyles: CSSProperties = {
-            '--sidebar-bg': 'var(--accent-color)',
-            '--sidebar-fg': '#ffffff',
-            '--sidebar-muted-fg': '#e5e7eb',
-          };
+        const sidebarStyles = {
+  '--sidebar-bg': 'var(--accent-color)',
+  '--sidebar-fg': '#ffffff',
+  '--sidebar-muted-fg': '#e5e7eb',
+} as React.CSSProperties;
           
           return (
             <div style={sidebarStyles} className={cn("flex min-h-full relative text-[--foreground-cv]")}>
